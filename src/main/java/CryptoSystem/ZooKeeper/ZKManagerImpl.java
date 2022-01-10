@@ -16,6 +16,7 @@ import java.util.List;
 public class ZKManagerImpl implements ZKManager {
     private static ZooKeeper zkeeper;
     private static ZKConnection zkConnection;
+    private static final String zooKeeperHostName = "zoo1.zk.local";
 
 
 
@@ -26,7 +27,7 @@ public class ZKManagerImpl implements ZKManager {
     private void initialize(Integer port) throws IOException, InterruptedException {
         System.out.println("Entered ZKManagerImpl initialize with port: " + port);
         zkConnection = new ZKConnection();
-        zkeeper = zkConnection.connect("127.0.0.1:" + port.toString());
+        zkeeper = zkConnection.connect(zooKeeperHostName+ ":" + port.toString());
     }
 
     public void closeConnection() throws InterruptedException {

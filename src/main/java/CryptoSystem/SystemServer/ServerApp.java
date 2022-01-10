@@ -82,13 +82,13 @@ public class ServerApp {
             myZK = new ZKManagerImpl(zkPort);
             try {
                 System.err.println("*** running myZK.create ***");
-                myZK.create("/" + shard_string,  BigInteger.valueOf(server_args.get("shard")).toByteArray());
+                myZK.create("/" + shard_string, shard_string.toString().getBytes());
             } catch (KeeperException e)  {
                 System.err.println("*** myZK.create failed ***\n" + e.getMessage());
             }
             try {
                 System.err.println("*** running myZK.createEphemeral ***");
-                myZK.createEphemeral("/" + shard_string + "/" + serverNo_String, BigInteger.valueOf(server_args.get("gRPCPort")).toByteArray());
+                myZK.createEphemeral("/" + shard_string + "/" + serverNo_String, gRPCPort.toString().getBytes() );
             } catch (KeeperException e)  {
                 System.err.println("*** myZK.createEphemeral failed ***\n" + e.getMessage());
                 System.err.println("ERROR ERROR ERROR!");
