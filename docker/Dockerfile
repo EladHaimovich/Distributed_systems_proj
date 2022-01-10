@@ -3,11 +3,19 @@ FROM openjdk:11
 
 ARG ShardID
 ARG ServerID
+ARG ZookeeperPort
 
 ENV shardid=ShardID
 
-RUN wget https://archive.apache.org/dist/zookeeper/zookeeper-3.4.9/zookeeper-3.4.9.tar.gz
-RUN tar -xvzf zookeeper-3.4.9.tar.gz
+#RUN wget https://archive.apache.org/dist/zookeeper/zookeeper-3.4.9/zookeeper-3.4.9.tar.gz
+#RUN tar -xvzf zookeeper-3.4.9.tar.gz
+#COPY src/main/resources/zoo.cfg  /zookeeper-3.4.9/conf/
+#RUN echo '99' > myid
+#RUN mkdir /ZooKeeper/
+#RUN mkdir /ZooKeeper/data
+#RUN mv ./myid /ZooKeeper/data/myid
+
+
 
 COPY . /server
 
@@ -15,12 +23,12 @@ WORKDIR /server
 
 
 
-RUN echo "$ShardID $ServerID" > ./parameters
+RUN echo "$ShardID $ServerID $ZookeeperPort" > ./parameters && cat ./parameters
 
-EXPOSE 20000 30000 40000
+EXPOSE 30000 40000
 
 #RUN ls ./build/libs
 
 RUN pwd && ls .
 
-ENTRYPOINT java -jar ./build/libs/SystemServer-0.0.1.jar
+ENTRYPOINT  sh ./docker/Entrypoint.sh

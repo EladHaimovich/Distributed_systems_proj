@@ -1,46 +1,94 @@
 version: "3.9"
 services:
-  server00:
+  zookeeper1:
+    image: docker.io/bitnami/zookeeper:3.7
+    hostname: zoo1.zk.local
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper1_data:/bitnami
+    networks:
+      - zookeeper
+    environment:
+      - ZOO_SERVER_ID=1
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - ZOO_SERVERS=zoo1.zk.local:2888:3888 #,zoo2.zk.local:2888:3888,zoo3.zk.local:2888:3888
+      - ZOO_PORT_NUMBER=2181
+
+  zoonavigator:
+    image: elkozmon/zoonavigator:1.1.1
+    hostname: navigator.zk.local
+    ports:
+      - "9000:9000"
+    networks:
+      - zookeeper
+    environment:
+      HTTP_PORT: 9000
+      CONNECTION_ZKLOCAL1_NAME: ZooKeeper Server 1
+      CONNECTION_ZKLOCAL1_CONN: zoo1.zk.local
+
+#      CONNECTION_ZKLOCAL2_NAME: ZooKeeper Server 2
+#      CONNECTION_ZKLOCAL2_CONN: zoo2.zk.local
+#
+#      CONNECTION_ZKLOCAL3_NAME: ZooKeeper Server 3
+#      CONNECTION_ZKLOCAL3_CONN: zoo3.zk.local
+
+      AUTO_CONNECT_CONNECTION_ID: ZKLOCAL1
+
+  server0000:
     build:
       context: .
       dockerfile: docker/Dockerfile
       args:
         - ShardID=0
         - ServerID=0
+        - ZookeeperPort=2181
+    networks:
+      - zookeeper
     ports:
-      - "20000:20000" # ZooKeeper
+#      - "20000:20000" # ZooKeeper
       - "30000:30000" # gRPC
       - "40000:40000" # Rest
 
-#  server01:
+#  server0001:
 #    build:
 #      context: .
 #      args:
 #        - ShardID=0
 #        - ServerID=1
+#        - ZookeeperPort=20001
 #    ports:
-#      - "20001:20000" # ZooKeeper
+#      - "20001:20001" # ZooKeeper
 #      - "30001:30000" # gRPC
 #      - "40001:40000" # Rest
-
-#  server10:
+#
+#  server0100:
 #    build:
 #      context: .
 #      args:
 #        - ShardID=1
 #        - ServerID=0
+#        - ZookeeperPort=20100
 #    ports:
-#      - "20100:20000" # ZooKeeper
+#      - "20100:20100" # ZooKeeper
 #      - "30100:30000" # gRPC
 #      - "40100:40000" # Rest
-
-#  server11:
+#
+#  server0101:
 #    build:
 #      context: .
 #      args:
 #        - ShardID=1
 #        - ServerID=1
+#        - ZookeeperPort=20101
 #    ports:
-#      - "20101:20000" # ZooKeeper
+#      - "20101:20101" # ZooKeeper
 #      - "30101:30000" # gRPC
 #      - "40101:40000" # Rest
+
+networks:
+  zookeeper:
+
+volumes:
+  zookeeper1_data:
+    driver: local

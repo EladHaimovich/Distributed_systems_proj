@@ -1,17 +1,23 @@
 package CryptoSystem.gRPCwrapper;
 
+import CryptoSystem.SystemServer.Spring.RESTresponse;
 import CryptoSystem.ZooKeeper.ZKManager;
 import CryptoSystem.types.TR;
 import CryptoSystem.types.TX;
 import CryptoSystem.types.UTxO;
+import com.google.common.util.concurrent.ListenableFuture;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 import notsystemserver.grpc.*;
+import org.apache.zookeeper.KeeperException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
@@ -27,7 +33,11 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
 
     static Semaphore atomic_vote_Mutex = new Semaphore(1);
 
-
+    /*
+     * * * * * * * * * * * *
+     * Internal functions  *
+     * * * * * * * * * * * *
+     */
 
     public static void setShard_id(Integer shard_id) {
         SystemServerImpl.shard_id = shard_id;
@@ -53,9 +63,57 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
         return serverGrpcPort;
     }
 
+    private static Integer getLeaderPort(String shard) {
+        try {
+            List<String> servers = myZK.getChildren("/" + shard);
+            servers.sort(Comparator.naturalOrder());
+            Integer server_port = Integer.parseInt(myZK.getZNodeData("/" + shard + "/" + servers.get(0),false));
+            return server_port;
+
+        } catch (InterruptedException | KeeperException | NullPointerException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    /*
+     * * * * * * * * * * *
+     * Server functions  *
+     * * * * * * * * * * *
+     */
+
     @Override
     public void initServer(Init_Server_Args request,
                            StreamObserver<Response_status> responseObserver) {
+        System.out.println("Entered init server " + shard_id.toString() + " " + server_id.toString());
+
+        if (getLeaderPort(shard_id.toString()) == serverGrpcPort) {
+            try {
+                List<String> servers = myZK.getChildren("/" + shard_id.toString());
+                servers.remove(server_id.toString());
+                for (String server:servers) {
+                    Integer server_port = Integer.parseInt(myZK.getZNodeData("/" + shard_id.toString() + "/" + server,false));
+                    ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", server_port)
+                            .usePlaintext()
+                            .build();
+                    SystemServerGrpc.SystemServerBlockingStub stub = SystemServerGrpc.newBlockingStub(channel);
+                    Init_Server_Args args = Init_Server_Args.newBuilder().build();
+                    Response_status res_grpc = stub.initServer(args);
+                    channel.shutdown();
+                    if (!(res_grpc.getResponse().equals("OK"))) {
+                        responseObserver.onNext(res_grpc);
+                        responseObserver.onCompleted();
+                    }
+                }
+
+            } catch (InterruptedException | KeeperException | NullPointerException | UnsupportedEncodingException e) {
+                e.printStackTrace();
+                Response_status response = Response_status.newBuilder().setResponse("Catched Exception").build();
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
+            }
+        }
+
         spent_utxos = new HashMap<byte[], List<UTxO>>();
         unspent_utxos = new HashMap<byte[], List<UTxO>>();
 
@@ -66,7 +124,6 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
             gen_list.add(gen_utxo);
             unspent_utxos.put(new byte[UTxO.SIZE_OF_ADDESSS],gen_list);
         }
-
         Response_status response = Response_status.newBuilder().setResponse("OK").build();
 
         responseObserver.onNext(response);
@@ -130,4 +187,39 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
 
 
     }
+
+
+    /*
+    * * * * * * * * * * *
+    * Client functions  *
+    * * * * * * * * * * *
+    */
+
+    public static boolean send_initServer() {
+        System.out.println("Entered send_initServer " + shard_id.toString() + " " + server_id.toString());
+        try {
+            List<String> shards = myZK.getChildren("/");
+            for (String shard:shards) {
+                System.out.println("in send_initServer: sending init to shard: " + shard);
+                Integer server_port = getLeaderPort(shard);
+                ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", server_port)
+                        .usePlaintext()
+                        .build();
+                SystemServerGrpc.SystemServerBlockingStub stub = SystemServerGrpc.newBlockingStub(channel);
+                Init_Server_Args args = Init_Server_Args.newBuilder().build();
+                Response_status res_grpc = stub.initServer(args);
+                if (!(res_grpc.getResponse().equals("OK"))) {
+                    channel.shutdown();
+                    return false;
+                }
+                channel.shutdown();
+            }
+
+        } catch (InterruptedException | KeeperException | NullPointerException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
 }

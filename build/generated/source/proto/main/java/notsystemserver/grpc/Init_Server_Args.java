@@ -48,16 +48,6 @@ private static final long serialVersionUID = 0L;
           case 0:
             done = true;
             break;
-          case 8: {
-
-            shardId_ = input.readInt32();
-            break;
-          }
-          case 16: {
-
-            serverId_ = input.readInt32();
-            break;
-          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -90,28 +80,6 @@ private static final long serialVersionUID = 0L;
             notsystemserver.grpc.Init_Server_Args.class, notsystemserver.grpc.Init_Server_Args.Builder.class);
   }
 
-  public static final int SHARD_ID_FIELD_NUMBER = 1;
-  private int shardId_;
-  /**
-   * <code>int32 shard_id = 1;</code>
-   * @return The shardId.
-   */
-  @java.lang.Override
-  public int getShardId() {
-    return shardId_;
-  }
-
-  public static final int SERVER_ID_FIELD_NUMBER = 2;
-  private int serverId_;
-  /**
-   * <code>int32 server_id = 2;</code>
-   * @return The serverId.
-   */
-  @java.lang.Override
-  public int getServerId() {
-    return serverId_;
-  }
-
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -126,12 +94,6 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (shardId_ != 0) {
-      output.writeInt32(1, shardId_);
-    }
-    if (serverId_ != 0) {
-      output.writeInt32(2, serverId_);
-    }
     unknownFields.writeTo(output);
   }
 
@@ -141,14 +103,6 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (shardId_ != 0) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeInt32Size(1, shardId_);
-    }
-    if (serverId_ != 0) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeInt32Size(2, serverId_);
-    }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
@@ -164,10 +118,6 @@ private static final long serialVersionUID = 0L;
     }
     notsystemserver.grpc.Init_Server_Args other = (notsystemserver.grpc.Init_Server_Args) obj;
 
-    if (getShardId()
-        != other.getShardId()) return false;
-    if (getServerId()
-        != other.getServerId()) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -179,10 +129,6 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    hash = (37 * hash) + SHARD_ID_FIELD_NUMBER;
-    hash = (53 * hash) + getShardId();
-    hash = (37 * hash) + SERVER_ID_FIELD_NUMBER;
-    hash = (53 * hash) + getServerId();
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -316,10 +262,6 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public Builder clear() {
       super.clear();
-      shardId_ = 0;
-
-      serverId_ = 0;
-
       return this;
     }
 
@@ -346,8 +288,6 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public notsystemserver.grpc.Init_Server_Args buildPartial() {
       notsystemserver.grpc.Init_Server_Args result = new notsystemserver.grpc.Init_Server_Args(this);
-      result.shardId_ = shardId_;
-      result.serverId_ = serverId_;
       onBuilt();
       return result;
     }
@@ -396,12 +336,6 @@ private static final long serialVersionUID = 0L;
 
     public Builder mergeFrom(notsystemserver.grpc.Init_Server_Args other) {
       if (other == notsystemserver.grpc.Init_Server_Args.getDefaultInstance()) return this;
-      if (other.getShardId() != 0) {
-        setShardId(other.getShardId());
-      }
-      if (other.getServerId() != 0) {
-        setServerId(other.getServerId());
-      }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
       return this;
@@ -428,68 +362,6 @@ private static final long serialVersionUID = 0L;
           mergeFrom(parsedMessage);
         }
       }
-      return this;
-    }
-
-    private int shardId_ ;
-    /**
-     * <code>int32 shard_id = 1;</code>
-     * @return The shardId.
-     */
-    @java.lang.Override
-    public int getShardId() {
-      return shardId_;
-    }
-    /**
-     * <code>int32 shard_id = 1;</code>
-     * @param value The shardId to set.
-     * @return This builder for chaining.
-     */
-    public Builder setShardId(int value) {
-      
-      shardId_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>int32 shard_id = 1;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearShardId() {
-      
-      shardId_ = 0;
-      onChanged();
-      return this;
-    }
-
-    private int serverId_ ;
-    /**
-     * <code>int32 server_id = 2;</code>
-     * @return The serverId.
-     */
-    @java.lang.Override
-    public int getServerId() {
-      return serverId_;
-    }
-    /**
-     * <code>int32 server_id = 2;</code>
-     * @param value The serverId to set.
-     * @return This builder for chaining.
-     */
-    public Builder setServerId(int value) {
-      
-      serverId_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>int32 server_id = 2;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearServerId() {
-      
-      serverId_ = 0;
-      onChanged();
       return this;
     }
     @java.lang.Override

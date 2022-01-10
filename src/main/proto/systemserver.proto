@@ -5,8 +5,6 @@ option java_multiple_files = true;
 package notsystemserver.grpc;
 
 message Init_Server_Args {
-  int32 shard_id = 1;
-  int32 server_id = 2;
 }
 
 message TR_m {

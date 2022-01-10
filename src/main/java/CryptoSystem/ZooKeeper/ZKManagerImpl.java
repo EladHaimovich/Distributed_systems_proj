@@ -11,17 +11,22 @@ import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
 import java.util.List;
 
+
+
 public class ZKManagerImpl implements ZKManager {
     private static ZooKeeper zkeeper;
     private static ZKConnection zkConnection;
+
+
 
     public ZKManagerImpl(Integer port) throws IOException, InterruptedException {
         initialize(port);
     }
 
     private void initialize(Integer port) throws IOException, InterruptedException {
+        System.out.println("Entered ZKManagerImpl initialize with port: " + port);
         zkConnection = new ZKConnection();
-        zkeeper = zkConnection.connect("localhost:" + port.toString());
+        zkeeper = zkConnection.connect("127.0.0.1:" + port.toString());
     }
 
     public void closeConnection() throws InterruptedException {

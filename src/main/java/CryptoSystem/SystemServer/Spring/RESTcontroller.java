@@ -14,7 +14,7 @@ public class RESTcontroller {
 
     @PostMapping(value = "/TX")
     public RESTresponse TX(@RequestBody TX tx_request) {
-
+        System.out.println("Entered Rest: init");
         SystemServerImpl grpc_server = new SystemServerImpl();
         Integer port = grpc_server.getGrpcPort();
 
@@ -38,4 +38,14 @@ public class RESTcontroller {
         return res;
     }
 
+    @GetMapping(value = "/init")
+    public RESTresponse init() {
+        System.out.println("Entered Rest: init");
+        RESTresponse res;
+        if (SystemServerImpl.send_initServer())
+            res = new RESTresponse("Init OK");
+        else
+            res = new RESTresponse("Init Failed");
+        return res;
+    }
 }

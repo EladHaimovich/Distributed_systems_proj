@@ -16,26 +16,29 @@ import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 public class ServerApp {
     public static final Integer NUM_OF_SHARDS = 2;
 
 
 
-    private static final Integer zkPort = 20000;
+    private static Integer zkPort = 2181;
     private static final Integer gRPCPort = 30000;
     private static final Integer restPort = 40000;
     private static Integer serverID;
     private static Integer shard;
+    private static SystemServerImpl grpc_service;
     private static ZKManager myZK;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
 
         Scanner scanner = null;
         try {
             scanner = new Scanner(new File("./parameters"));
-            shard = new Integer(scanner.nextInt());
-            serverID = new Integer(scanner.nextInt());
+            shard = scanner.nextInt();
+            serverID = scanner.nextInt();
+            zkPort = scanner.nextInt();
 
         } catch (Exception e) {//Catch exception if any
             System.err.println("Error: " + e.getMessage());
@@ -48,6 +51,7 @@ public class ServerApp {
         System.out.println("started server");
         System.out.println("shardID = " + shard.toString());
         System.out.println("serverID = " + serverID.toString());
+        System.out.println("zkPort = " + zkPort.toString());
 
         HashMap<String, Integer> server_args = new HashMap<String, Integer>();
         server_args.put("serverNo", serverID);
@@ -56,6 +60,7 @@ public class ServerApp {
         server_args.put("gRPCPort", gRPCPort);
         server_args.put("restPort", restPort);
 
+        TimeUnit.SECONDS.sleep(10);
         initServer(server_args);
     }
 
@@ -73,22 +78,27 @@ public class ServerApp {
         String shard_string = new DecimalFormat("00").format(server_args.get("shard"));
         String serverNo_String = new DecimalFormat("00").format(server_args.get("serverNo"));
         try {
+            System.err.println("*** running new ZKManagerImpl ***");
             myZK = new ZKManagerImpl(zkPort);
             try {
+                System.err.println("*** running myZK.create ***");
                 myZK.create("/" + shard_string,  BigInteger.valueOf(server_args.get("shard")).toByteArray());
             } catch (KeeperException e)  {
-                System.err.println(e.getMessage());
+                System.err.println("*** myZK.create failed ***\n" + e.getMessage());
             }
             try {
+                System.err.println("*** running myZK.createEphemeral ***");
                 myZK.createEphemeral("/" + shard_string + "/" + serverNo_String, BigInteger.valueOf(server_args.get("gRPCPort")).toByteArray());
             } catch (KeeperException e)  {
-                System.err.println(e.getMessage());
+                System.err.println("*** myZK.createEphemeral failed ***\n" + e.getMessage());
                 System.err.println("ERROR ERROR ERROR!");
                 assert false;
             }
         } catch (IOException e) {
+            System.err.println("*** IOException during myZK init ***\n" + e.getMessage());
             e.printStackTrace();
         } catch (InterruptedException e) {
+            System.err.println("*** IOException during myZK init ***\n" + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -96,12 +106,12 @@ public class ServerApp {
     static void initGRpc(HashMap<String, Integer> server_args) {
         System.out.println("Init CryptoSystem.SystemServer.gRPC service");
         int port = server_args.get("gRPCPort");
-        SystemServerImpl new_grpc_service = new SystemServerImpl();
-        new_grpc_service.setServer_id(server_args.get("serverNo"));
-        new_grpc_service.setShard_id(server_args.get("shard"));
-        new_grpc_service.setMyZK(myZK);
-        new_grpc_service.setZkPort(server_args.get("zkPort"));
-        new_grpc_service.setServerGrpcPort(server_args.get("gRPCPort"));
+        grpc_service = new SystemServerImpl();
+        grpc_service.setServer_id(server_args.get("serverNo"));
+        grpc_service.setShard_id(server_args.get("shard"));
+        grpc_service.setMyZK(myZK);
+        grpc_service.setZkPort(server_args.get("zkPort"));
+        grpc_service.setServerGrpcPort(server_args.get("gRPCPort"));
         Server server = ServerBuilder.forPort(port)
                 .addService(new SystemServerImpl()).build();
 
@@ -127,5 +137,9 @@ public class ServerApp {
         args[0] = server_args.get("restPort").toString();
         args[1] = server_args.get("gRPCPort").toString();
         SystemServerApplication.main_spring(args);
+    }
+
+    public static SystemServerImpl getGrpc_service() {
+        return grpc_service;
     }
 }
