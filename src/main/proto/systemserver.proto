@@ -41,5 +41,5 @@ service SystemServer {
   rpc Submit_Transaction(TX_m) returns (Response_status);
   rpc submit_Transaction_list(Submit_Transaction_list_Req) returns (Response_status);
   rpc Send_Coins(TX_m) returns (Response_status);
-  rpc Publish_Transaction(TX_m) returns (Response_status);
+  rpc Publish_Transaction(Submit_Transaction_list_Req) returns (Response_status);
 }

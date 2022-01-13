@@ -139,27 +139,27 @@ public final class SystemServerGrpc {
     return getSendCoinsMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<notsystemserver.grpc.TX_m,
+  private static volatile io.grpc.MethodDescriptor<notsystemserver.grpc.Submit_Transaction_list_Req,
       notsystemserver.grpc.Response_status> getPublishTransactionMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "Publish_Transaction",
-      requestType = notsystemserver.grpc.TX_m.class,
+      requestType = notsystemserver.grpc.Submit_Transaction_list_Req.class,
       responseType = notsystemserver.grpc.Response_status.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<notsystemserver.grpc.TX_m,
+  public static io.grpc.MethodDescriptor<notsystemserver.grpc.Submit_Transaction_list_Req,
       notsystemserver.grpc.Response_status> getPublishTransactionMethod() {
-    io.grpc.MethodDescriptor<notsystemserver.grpc.TX_m, notsystemserver.grpc.Response_status> getPublishTransactionMethod;
+    io.grpc.MethodDescriptor<notsystemserver.grpc.Submit_Transaction_list_Req, notsystemserver.grpc.Response_status> getPublishTransactionMethod;
     if ((getPublishTransactionMethod = SystemServerGrpc.getPublishTransactionMethod) == null) {
       synchronized (SystemServerGrpc.class) {
         if ((getPublishTransactionMethod = SystemServerGrpc.getPublishTransactionMethod) == null) {
           SystemServerGrpc.getPublishTransactionMethod = getPublishTransactionMethod =
-              io.grpc.MethodDescriptor.<notsystemserver.grpc.TX_m, notsystemserver.grpc.Response_status>newBuilder()
+              io.grpc.MethodDescriptor.<notsystemserver.grpc.Submit_Transaction_list_Req, notsystemserver.grpc.Response_status>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "Publish_Transaction"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  notsystemserver.grpc.TX_m.getDefaultInstance()))
+                  notsystemserver.grpc.Submit_Transaction_list_Req.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   notsystemserver.grpc.Response_status.getDefaultInstance()))
               .setSchemaDescriptor(new SystemServerMethodDescriptorSupplier("Publish_Transaction"))
@@ -248,7 +248,7 @@ public final class SystemServerGrpc {
 
     /**
      */
-    public void publishTransaction(notsystemserver.grpc.TX_m request,
+    public void publishTransaction(notsystemserver.grpc.Submit_Transaction_list_Req request,
         io.grpc.stub.StreamObserver<notsystemserver.grpc.Response_status> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getPublishTransactionMethod(), responseObserver);
     }
@@ -287,7 +287,7 @@ public final class SystemServerGrpc {
             getPublishTransactionMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                notsystemserver.grpc.TX_m,
+                notsystemserver.grpc.Submit_Transaction_list_Req,
                 notsystemserver.grpc.Response_status>(
                   this, METHODID_PUBLISH_TRANSACTION)))
           .build();
@@ -342,7 +342,7 @@ public final class SystemServerGrpc {
 
     /**
      */
-    public void publishTransaction(notsystemserver.grpc.TX_m request,
+    public void publishTransaction(notsystemserver.grpc.Submit_Transaction_list_Req request,
         io.grpc.stub.StreamObserver<notsystemserver.grpc.Response_status> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getPublishTransactionMethod(), getCallOptions()), request, responseObserver);
@@ -393,7 +393,7 @@ public final class SystemServerGrpc {
 
     /**
      */
-    public notsystemserver.grpc.Response_status publishTransaction(notsystemserver.grpc.TX_m request) {
+    public notsystemserver.grpc.Response_status publishTransaction(notsystemserver.grpc.Submit_Transaction_list_Req request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getPublishTransactionMethod(), getCallOptions(), request);
     }
@@ -448,7 +448,7 @@ public final class SystemServerGrpc {
     /**
      */
     public com.google.common.util.concurrent.ListenableFuture<notsystemserver.grpc.Response_status> publishTransaction(
-        notsystemserver.grpc.TX_m request) {
+        notsystemserver.grpc.Submit_Transaction_list_Req request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getPublishTransactionMethod(), getCallOptions()), request);
     }
@@ -494,7 +494,7 @@ public final class SystemServerGrpc {
               (io.grpc.stub.StreamObserver<notsystemserver.grpc.Response_status>) responseObserver);
           break;
         case METHODID_PUBLISH_TRANSACTION:
-          serviceImpl.publishTransaction((notsystemserver.grpc.TX_m) request,
+          serviceImpl.publishTransaction((notsystemserver.grpc.Submit_Transaction_list_Req) request,
               (io.grpc.stub.StreamObserver<notsystemserver.grpc.Response_status>) responseObserver);
           break;
         default:

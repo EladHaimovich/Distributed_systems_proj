@@ -7,7 +7,9 @@ import notsystemserver.grpc.UTxO_m;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class TX {
@@ -161,5 +163,22 @@ public class TX {
 
     public byte[] getSender() {
         return sender.clone();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TX)) return false;
+        TX tx = (TX) o;
+        return Arrays.equals(getTx_id(), tx.getTx_id());
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(getAmount(), getUtxos(), getTimestamp(), getTrs());
+        result = 31 * result + Arrays.hashCode(getSender());
+        result = 31 * result + Arrays.hashCode(getReceiver());
+        result = 31 * result + Arrays.hashCode(getTx_id());
+        return result;
     }
 }

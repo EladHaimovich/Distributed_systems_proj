@@ -64,7 +64,7 @@ public final class Systemserver {
       ".notsystemserver.grpc.TR_m\"#\n\017Response_s" +
       "tatus\022\020\n\010response\030\001 \001(\t\"K\n\033Submit_Transa" +
       "ction_list_Req\022,\n\010requests\030\001 \003(\0132\032.notsy" +
-      "stemserver.grpc.TX_m2\345\003\n\014SystemServer\022\\\n" +
+      "stemserver.grpc.TX_m2\374\003\n\014SystemServer\022\\\n" +
       "\013init_Server\022&.notsystemserver.grpc.Init" +
       "_Server_Args\032%.notsystemserver.grpc.Resp" +
       "onse_status\022W\n\022Submit_Transaction\022\032.nots" +
@@ -74,9 +74,10 @@ public final class Systemserver {
       "ansaction_list_Req\032%.notsystemserver.grp" +
       "c.Response_status\022O\n\nSend_Coins\022\032.notsys" +
       "temserver.grpc.TX_m\032%.notsystemserver.gr" +
-      "pc.Response_status\022X\n\023Publish_Transactio" +
-      "n\022\032.notsystemserver.grpc.TX_m\032%.notsyste" +
-      "mserver.grpc.Response_statusB\002P\001b\006proto3"
+      "pc.Response_status\022o\n\023Publish_Transactio" +
+      "n\0221.notsystemserver.grpc.Submit_Transact" +
+      "ion_list_Req\032%.notsystemserver.grpc.Resp" +
+      "onse_statusB\002P\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
