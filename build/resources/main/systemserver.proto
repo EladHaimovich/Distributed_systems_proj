@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+
+package notsystemserver.grpc;
+
+message Init_Server_Args {
+}
+
+message TR_m {
+  bytes address = 1;
+  uint64 coins = 2;
+}
+
+message UTxO_m {
+  bytes Tx_id = 1;
+  TR_m tr = 2;
+}
+
+message TX_m {
+  bytes Tx_id = 1;
+  bytes sender = 2;
+  bytes receiver = 3;
+  uint64  amount = 4;
+  uint64 timestamp = 5;
+  repeated UTxO_m utxos = 6;
+  repeated TR_m trs = 7;
+
+}
+
+message Response_status {
+  string response = 1;
+}
+
+message Submit_Transaction_list_Req {
+  repeated TX_m requests = 1;
+}
+
+service SystemServer {
+  rpc init_Server(Init_Server_Args) returns (Response_status);
+  rpc Submit_Transaction(TX_m) returns (Response_status);
+  rpc submit_Transaction_list(Submit_Transaction_list_Req) returns (Response_status);
+  rpc Send_Coins(TX_m) returns (Response_status);
+  rpc Publish_Transaction(TX_m) returns (Response_status);
+}

@@ -66,6 +66,7 @@ public class ZKManagerImpl implements ZKManager {
 
     public List<String> getChildren(String path) throws KeeperException, InterruptedException {
         if (zkeeper.exists(path, false) == null) {
+            System.out.println("[ZKManagerImpl] PATH NOT EXIST: " + path);
             return new LinkedList<>();
         }
         return zkeeper.getChildren(path, false);

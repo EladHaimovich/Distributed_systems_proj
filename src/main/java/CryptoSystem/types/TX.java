@@ -128,7 +128,7 @@ public class TX {
     }
 
     public boolean isProcessed() {
-        return timestamp != 0;
+        return (timestamp != 0) || (trs == null);
     }
 
     public List<UTxO> getUtxos() {

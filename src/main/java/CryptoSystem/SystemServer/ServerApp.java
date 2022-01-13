@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -75,20 +76,26 @@ public class ServerApp {
         System.out.println("Init CryptoSystem.SystemServer.ZooKeeper service");
 
         // CryptoSystem.ZooKeeper Client
-        String shard_string = new DecimalFormat("00").format(server_args.get("shard"));
-        String serverNo_String = new DecimalFormat("00").format(server_args.get("serverNo"));
+        String shard_string = server_args.get("shard").toString();
+        String serverNo_String = server_args.get("serverNo").toString();
         try {
             System.err.println("*** running new ZKManagerImpl ***");
             myZK = new ZKManagerImpl(zkPort);
             try {
                 System.err.println("*** running myZK.create ***");
-                myZK.create("/" + shard_string, shard_string.toString().getBytes());
+                myZK.create("/Shards", shard_string.getBytes());
+            } catch (KeeperException e)  {
+                System.err.println("*** myZK.create failed ***\n" + e.getMessage());
+            }
+            try {
+                System.err.println("*** running myZK.create ***");
+                myZK.create("/Shards/" + shard_string, shard_string.getBytes());
             } catch (KeeperException e)  {
                 System.err.println("*** myZK.create failed ***\n" + e.getMessage());
             }
             try {
                 System.err.println("*** running myZK.createEphemeral ***");
-                myZK.createEphemeral("/" + shard_string + "/" + serverNo_String, gRPCPort.toString().getBytes() );
+                myZK.createEphemeral("/Shards/" + shard_string + "/" + serverNo_String, gRPCPort.toString().getBytes() );
             } catch (KeeperException e)  {
                 System.err.println("*** myZK.createEphemeral failed ***\n" + e.getMessage());
                 System.err.println("ERROR ERROR ERROR!");

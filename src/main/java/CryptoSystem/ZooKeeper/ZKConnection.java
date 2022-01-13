@@ -16,7 +16,6 @@ public class ZKConnection {
         zoo = new ZooKeeper(host, 2000, new Watcher() {
             public void process(WatchedEvent we) {
                 if (we.getState() == Event.KeeperState.SyncConnected) {
-                    System.out.println("\n\n\nthis is the middle of ZKConnection.connect\n\n");
                     connectionLatch.countDown();
                 }
             }
