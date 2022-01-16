@@ -42,4 +42,9 @@ public class uint128 {
     public uint128 clone() {
         return new uint128(this);
     }
+
+    @Override
+    public String toString() {
+        return Long.toUnsignedString(high) + Long.toUnsignedString(low) ;
+    }
 }

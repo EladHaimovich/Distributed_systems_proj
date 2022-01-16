@@ -37,9 +37,20 @@ public class TX {
         this.trs = from.getTrsList().stream().map(TR::new).collect(Collectors.toList());
     }
 
+    public TX_m to_grpc() {
+        TX_m res = TX_m.newBuilder()
+                .setTimestamp(timestamp)
+                .setTxId(tx_id.to_grpc())
+                .addAllUtxos(utxos.stream().map(UTxO::to_grpc).collect(Collectors.toList()))
+                .addAllTrs(trs.stream().map(TR::to_grpc).collect(Collectors.toList()))
+                .build();
+        return res;
+    }
+
     public boolean assign_timestamp(long timestamp) {
         if (this.timestamp != 0)
             return false;
+        this.timestamp = timestamp;
         return true;
     }
 

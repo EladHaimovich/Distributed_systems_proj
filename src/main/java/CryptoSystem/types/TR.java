@@ -20,7 +20,7 @@ public class TR {
         coins = tr_m.getCoins();
     }
 
-    public TR_m to_tr_m() {
+    public TR_m to_grpc() {
         return TR_m.newBuilder().setAddress(address.to_grpc()).setCoins(coins).build();
     }
 

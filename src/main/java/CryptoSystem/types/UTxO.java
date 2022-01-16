@@ -30,7 +30,7 @@ public class UTxO {
 //        tx_id = tx.getTx_id();
 //    }
 
-    public UTxO_m to_utxo_m() {
+    public UTxO_m to_grpc() {
         return UTxO_m.newBuilder()
                 .setAddress(address.to_grpc())
                 .setTxId(tx_id.to_grpc())
