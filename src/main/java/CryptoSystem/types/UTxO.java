@@ -8,48 +8,45 @@ import java.util.Objects;
 
 public class UTxO {
 
-    public static final int SIZE_OF_TXID = 16;
-    public static final int SIZE_OF_ADDESSS = 16;
-    byte []tx_id;
-    TR tr;
+    uint128 tx_id;
+    uint128 address;
 
-    public UTxO(byte []tx_id, TR tr) {
+    public UTxO(uint128 tx_id, uint128 address) {
         this.tx_id = tx_id.clone();
-        this.tr = tr.clone();
+        this.address = address.clone();
+    }
+
+    public UTxO(UTxO from) {
+        this(from.tx_id, from.address);
     }
 
     public UTxO(UTxO_m utxo_m) {
-        tx_id = utxo_m.getTxId().toByteArray().clone();
-        tr = new TR(utxo_m.getTr());
+        tx_id = new uint128(utxo_m.getTxId());
+        address = new uint128(utxo_m.getAddress());
     }
 
-    public UTxO(TX tx, byte[] address) {
-        tr = new TR(address, tx.get_amount_by_address(address));
-        tx_id = tx.getTx_id();
-    }
+//    public UTxO(TX tx, uint128 address) {
+//        tr = new TR(address, tx.get_amount_by_address(address));
+//        tx_id = tx.getTx_id();
+//    }
 
     public UTxO_m to_utxo_m() {
-        return UTxO_m.newBuilder().setTr(tr.to_tr_m()).setTxId(ByteString.copyFrom(tx_id)).build();
+        return UTxO_m.newBuilder()
+                .setAddress(address.to_grpc())
+                .setTxId(tx_id.to_grpc())
+                .build();
     }
 
-    public byte[] getTx_id() {
+    public uint128 getTx_id() {
         return tx_id.clone();
     }
 
-    public TR getTr() {
-        return tr.clone();
-    }
-
-    public long getAmount() {
-        return this.tr.getAmount();
-    }
-
-    public byte[] getAddress() {
-        return this.tr.getAddress();
+    public uint128 getAddress() {
+        return address;
     }
 
     public UTxO clone() {
-        return new UTxO(this.tx_id, this.tr);
+        return new UTxO(this);
     }
 
     @Override
@@ -57,13 +54,11 @@ public class UTxO {
         if (this == o) return true;
         if (!(o instanceof UTxO)) return false;
         UTxO uTxO = (UTxO) o;
-        return Arrays.equals(getTx_id(), uTxO.getTx_id()) && Arrays.equals(this.getAddress(), uTxO.getAddress());
+        return getTx_id().equals(uTxO.getTx_id()) && getAddress().equals(uTxO.getAddress());
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(getTr());
-        result = 31 * result + Arrays.hashCode(getTx_id());
-        return result;
+        return Objects.hash(getTx_id(), getAddress());
     }
 }

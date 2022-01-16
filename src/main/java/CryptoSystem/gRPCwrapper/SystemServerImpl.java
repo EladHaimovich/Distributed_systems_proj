@@ -5,6 +5,7 @@ import CryptoSystem.ZooKeeper.ZKManager;
 import CryptoSystem.types.TR;
 import CryptoSystem.types.TX;
 import CryptoSystem.types.UTxO;
+import CryptoSystem.types.uint128;
 import com.google.common.io.ByteStreams;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.grpc.ManagedChannel;
@@ -34,8 +35,8 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
     static private Integer zkPort;
     static private ZKManager myZK;
 
-    Map<byte[], List<UTxO>> spent_utxos;
-    Map<byte[], List<UTxO>> unspent_utxos;
+    Map<uint128, List<UTxO>> spent_utxos;
+    Map<uint128, List<UTxO>> unspent_utxos;
 
     List<TX> txList;
 
@@ -97,19 +98,19 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
     }
 
 
-    private byte[] hash128bit(String input) throws NoSuchAlgorithmException {
-        String hash = "35454B055CC325EA1AF2126E27707052";
-        String password = "ILoveJava";
-
-        MessageDigest md = MessageDigest.getInstance("MD5");
-        md.update(input.getBytes());
-        byte[] digest = md.digest();
-
-        byte[] res = new byte[8];
-        for (int i = 0; i < 8; i++)
-            res[i]=digest[i];
-        return res;
-    }
+//    private byte[] hash128bit(String input) throws NoSuchAlgorithmException {
+//        String hash = "35454B055CC325EA1AF2126E27707052";
+//        String password = "ILoveJava";
+//
+//        MessageDigest md = MessageDigest.getInstance("MD5");
+//        md.update(input.getBytes());
+//        byte[] digest = md.digest();
+//
+//        byte[] res = new byte[8];
+//        for (int i = 0; i < 8; i++)
+//            res[i]=digest[i];
+//        return res;
+//    }
 
 
     /*
@@ -150,90 +151,95 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
             }
         }
 
-        spent_utxos = new HashMap<byte[], List<UTxO>>();
-        unspent_utxos = new HashMap<byte[], List<UTxO>>();
+        spent_utxos = new HashMap<uint128, List<UTxO>>();
+        unspent_utxos = new HashMap<uint128, List<UTxO>>();
         txList = new ArrayList<TX>();
 
         if (shard_id == 0) {
-            TR gen_tr = new TR(new byte[UTxO.SIZE_OF_ADDESSS], -1);
-            UTxO gen_utxo = new UTxO(new byte[UTxO.SIZE_OF_TXID], gen_tr);
+            uint128 zero = new uint128(0,0);
+            TR gen_tr = new TR(zero, -1);
+            List<TR> tr_list = new ArrayList<TR>();
+            tr_list.add(gen_tr);
+            TX gen_tx = new TX(zero, 0,null, tr_list);
+
+            UTxO gen_utxo = new UTxO(zero, zero);
             List<UTxO> gen_list = new ArrayList<UTxO>();
             gen_list.add(gen_utxo);
-            unspent_utxos.put(new byte[UTxO.SIZE_OF_ADDESSS],gen_list);
+            unspent_utxos.put(zero,gen_list);
         }
         Response_status response = Response_status.newBuilder().setResponse("OK").build();
         responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
 
-    @Override
-    public void submitTransactionList(notsystemserver.grpc.Submit_Transaction_list_Req request,
-                                      io.grpc.stub.StreamObserver<notsystemserver.grpc.Response_status> responseObserver) {
-        Response_status response;
-        List<TX> txes = new ArrayList<TX>();
-        List<TX_m> requests = request.getRequestsList();
-        List<UTxO> utxos = new ArrayList<UTxO>();
-        List<TX_m> requests_processed = new ArrayList<TX_m>();
-        byte[] sender = requests.get(0).getSender().toByteArray();
-        for (TX_m tx_request:requests) {
-            TX tx = new TX(tx_request);
-            if (!tx.getSender().equals(sender)) {
-                String response_string = "Transaction list contains multiple senders";
-                response = Response_status.newBuilder().setResponse(response_string).build();
-                responseObserver.onNext(response);
-                responseObserver.onCompleted();
-                return;
-            }
-            for (UTxO utxo: tx.getUtxos()) {
-                if (utxos.contains(utxo)) {
-                    String response_string = "UTxO with TX_id: " + utxo.getTx_id().toString() + " and address: "
-                            + utxo.getAddress().toString() + " appeared more than once";
-                    response = Response_status.newBuilder().setResponse(response_string).build();
-                    responseObserver.onNext(response);
-                    responseObserver.onCompleted();
-                    return;
-                } else if (spent_utxos.get(tx.getSender()).contains(utxo)) {
-                    String response_string = "UTxO with TX_id: " + utxo.getTx_id().toString() + " and address: "
-                            + utxo.getAddress().toString() + " was already spent";
-                    response = Response_status.newBuilder().setResponse(response_string).build();
-                    responseObserver.onNext(response);
-                    responseObserver.onCompleted();
-                    return;
-                } else if (!utxo.getAddress().equals(tx.getSender())) {
-                    String response_string = "UTxO with TX_id: " + utxo.getTx_id().toString() + " and address: "
-                            + utxo.getAddress().toString() + " doesn't belong to sender:" + tx.getSender().toString();
-                    response = Response_status.newBuilder().setResponse(response_string).build();
-                    responseObserver.onNext(response);
-                    responseObserver.onCompleted();
-                    return;
-                }
-                utxos.add(utxo);
-            }
-            if (!tx.validate(tx_request.getAmount())) {
-                String response_string = "TX with TX_id: " + tx.getTx_id().toString() + " doesn't have sufficient amount of coins";
-                response = Response_status.newBuilder().setResponse(response_string).build();
-                responseObserver.onNext(response);
-                responseObserver.onCompleted();
-                return;
-            }
-
-            System.currentTimeMillis();
-
-
-            tx.process()
-
-        }
-
-
-
-
-
-
-        String response_string = "OK";
-        response = Response_status.newBuilder().setResponse(response_string).build();
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
-    }
+//    @Override
+//    public void submitTransactionList(notsystemserver.grpc.Transaction_list request,
+//                                      io.grpc.stub.StreamObserver<notsystemserver.grpc.Response_status> responseObserver) {
+//        Response_status response;
+//        List<TX> txes = new ArrayList<TX>();
+//        List<TX_m> requests = request.getRequestsList();
+//        List<UTxO> utxos = new ArrayList<UTxO>();
+//        List<TX_m> requests_processed = new ArrayList<TX_m>();
+//        byte[] sender = requests.get(0).getSender().toByteArray();
+//        for (TX_m tx_request:requests) {
+//            TX tx = new TX(tx_request);
+//            if (!tx.getSender().equals(sender)) {
+//                String response_string = "Transaction list contains multiple senders";
+//                response = Response_status.newBuilder().setResponse(response_string).build();
+//                responseObserver.onNext(response);
+//                responseObserver.onCompleted();
+//                return;
+//            }
+//            for (UTxO utxo: tx.getUtxos()) {
+//                if (utxos.contains(utxo)) {
+//                    String response_string = "UTxO with TX_id: " + utxo.getTx_id().toString() + " and address: "
+//                            + utxo.getAddress().toString() + " appeared more than once";
+//                    response = Response_status.newBuilder().setResponse(response_string).build();
+//                    responseObserver.onNext(response);
+//                    responseObserver.onCompleted();
+//                    return;
+//                } else if (spent_utxos.get(tx.getSender()).contains(utxo)) {
+//                    String response_string = "UTxO with TX_id: " + utxo.getTx_id().toString() + " and address: "
+//                            + utxo.getAddress().toString() + " was already spent";
+//                    response = Response_status.newBuilder().setResponse(response_string).build();
+//                    responseObserver.onNext(response);
+//                    responseObserver.onCompleted();
+//                    return;
+//                } else if (!utxo.getAddress().equals(tx.getSender())) {
+//                    String response_string = "UTxO with TX_id: " + utxo.getTx_id().toString() + " and address: "
+//                            + utxo.getAddress().toString() + " doesn't belong to sender:" + tx.getSender().toString();
+//                    response = Response_status.newBuilder().setResponse(response_string).build();
+//                    responseObserver.onNext(response);
+//                    responseObserver.onCompleted();
+//                    return;
+//                }
+//                utxos.add(utxo);
+//            }
+//            if (!tx.validate(tx_request.getAmount())) {
+//                String response_string = "TX with TX_id: " + tx.getTx_id().toString() + " doesn't have sufficient amount of coins";
+//                response = Response_status.newBuilder().setResponse(response_string).build();
+//                responseObserver.onNext(response);
+//                responseObserver.onCompleted();
+//                return;
+//            }
+//
+//            System.currentTimeMillis();
+//
+//
+//            tx.process();
+//
+//        }
+//
+//
+//
+//
+//
+//
+//        String response_string = "OK";
+//        response = Response_status.newBuilder().setResponse(response_string).build();
+//        responseObserver.onNext(response);
+//        responseObserver.onCompleted();
+//    }
 
 
     @Override

@@ -6,6 +6,7 @@ import CryptoSystem.SystemServer.Spring.SystemServerApplication;
 import CryptoSystem.ZooKeeper.ZKManager;
 import CryptoSystem.ZooKeeper.ZKManagerImpl;
 import CryptoSystem.gRPCwrapper.SystemServerImpl;
+import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import org.apache.zookeeper.KeeperException;
@@ -34,17 +35,12 @@ public class ServerApp {
 
     public static void main(String[] args) throws InterruptedException {
 
-        Scanner scanner = null;
-        try {
-            scanner = new Scanner(new File("./parameters"));
+        try (Scanner scanner = new Scanner(new File("./parameters"))) {
             shard = scanner.nextInt();
             serverID = scanner.nextInt();
             zkPort = scanner.nextInt();
-
         } catch (Exception e) {//Catch exception if any
             System.err.println("Error: " + e.getMessage());
-        } finally {
-            scanner.close();
         }
 
         assert (Integer.compareUnsigned(NUM_OF_SHARDS, shard) > 0);
@@ -120,7 +116,7 @@ public class ServerApp {
         grpc_service.setZkPort(server_args.get("zkPort"));
         grpc_service.setServerGrpcPort(server_args.get("gRPCPort"));
         Server server = ServerBuilder.forPort(port)
-                .addService(new SystemServerImpl()).build();
+                .addService((BindableService) new SystemServerImpl()).build();
 
         System.out.println("Starting server...");
         try {

@@ -16,7 +16,6 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private UTxO_m() {
-    txId_ = com.google.protobuf.ByteString.EMPTY;
   }
 
   @java.lang.Override
@@ -50,19 +49,27 @@ private static final long serialVersionUID = 0L;
             done = true;
             break;
           case 10: {
+            notsystemserver.grpc.uint128_m.Builder subBuilder = null;
+            if (txId_ != null) {
+              subBuilder = txId_.toBuilder();
+            }
+            txId_ = input.readMessage(notsystemserver.grpc.uint128_m.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(txId_);
+              txId_ = subBuilder.buildPartial();
+            }
 
-            txId_ = input.readBytes();
             break;
           }
           case 18: {
-            notsystemserver.grpc.TR_m.Builder subBuilder = null;
-            if (tr_ != null) {
-              subBuilder = tr_.toBuilder();
+            notsystemserver.grpc.uint128_m.Builder subBuilder = null;
+            if (address_ != null) {
+              subBuilder = address_.toBuilder();
             }
-            tr_ = input.readMessage(notsystemserver.grpc.TR_m.parser(), extensionRegistry);
+            address_ = input.readMessage(notsystemserver.grpc.uint128_m.parser(), extensionRegistry);
             if (subBuilder != null) {
-              subBuilder.mergeFrom(tr_);
-              tr_ = subBuilder.buildPartial();
+              subBuilder.mergeFrom(address_);
+              address_ = subBuilder.buildPartial();
             }
 
             break;
@@ -100,40 +107,55 @@ private static final long serialVersionUID = 0L;
   }
 
   public static final int TX_ID_FIELD_NUMBER = 1;
-  private com.google.protobuf.ByteString txId_;
+  private notsystemserver.grpc.uint128_m txId_;
   /**
-   * <code>bytes Tx_id = 1;</code>
+   * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
+   * @return Whether the txId field is set.
+   */
+  @java.lang.Override
+  public boolean hasTxId() {
+    return txId_ != null;
+  }
+  /**
+   * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
    * @return The txId.
    */
   @java.lang.Override
-  public com.google.protobuf.ByteString getTxId() {
-    return txId_;
+  public notsystemserver.grpc.uint128_m getTxId() {
+    return txId_ == null ? notsystemserver.grpc.uint128_m.getDefaultInstance() : txId_;
+  }
+  /**
+   * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
+   */
+  @java.lang.Override
+  public notsystemserver.grpc.uint128_mOrBuilder getTxIdOrBuilder() {
+    return getTxId();
   }
 
-  public static final int TR_FIELD_NUMBER = 2;
-  private notsystemserver.grpc.TR_m tr_;
+  public static final int ADDRESS_FIELD_NUMBER = 2;
+  private notsystemserver.grpc.uint128_m address_;
   /**
-   * <code>.notsystemserver.grpc.TR_m tr = 2;</code>
-   * @return Whether the tr field is set.
+   * <code>.notsystemserver.grpc.uint128_m address = 2;</code>
+   * @return Whether the address field is set.
    */
   @java.lang.Override
-  public boolean hasTr() {
-    return tr_ != null;
+  public boolean hasAddress() {
+    return address_ != null;
   }
   /**
-   * <code>.notsystemserver.grpc.TR_m tr = 2;</code>
-   * @return The tr.
+   * <code>.notsystemserver.grpc.uint128_m address = 2;</code>
+   * @return The address.
    */
   @java.lang.Override
-  public notsystemserver.grpc.TR_m getTr() {
-    return tr_ == null ? notsystemserver.grpc.TR_m.getDefaultInstance() : tr_;
+  public notsystemserver.grpc.uint128_m getAddress() {
+    return address_ == null ? notsystemserver.grpc.uint128_m.getDefaultInstance() : address_;
   }
   /**
-   * <code>.notsystemserver.grpc.TR_m tr = 2;</code>
+   * <code>.notsystemserver.grpc.uint128_m address = 2;</code>
    */
   @java.lang.Override
-  public notsystemserver.grpc.TR_mOrBuilder getTrOrBuilder() {
-    return getTr();
+  public notsystemserver.grpc.uint128_mOrBuilder getAddressOrBuilder() {
+    return getAddress();
   }
 
   private byte memoizedIsInitialized = -1;
@@ -150,11 +172,11 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (!txId_.isEmpty()) {
-      output.writeBytes(1, txId_);
+    if (txId_ != null) {
+      output.writeMessage(1, getTxId());
     }
-    if (tr_ != null) {
-      output.writeMessage(2, getTr());
+    if (address_ != null) {
+      output.writeMessage(2, getAddress());
     }
     unknownFields.writeTo(output);
   }
@@ -165,13 +187,13 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (!txId_.isEmpty()) {
+    if (txId_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeBytesSize(1, txId_);
+        .computeMessageSize(1, getTxId());
     }
-    if (tr_ != null) {
+    if (address_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(2, getTr());
+        .computeMessageSize(2, getAddress());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -188,12 +210,15 @@ private static final long serialVersionUID = 0L;
     }
     notsystemserver.grpc.UTxO_m other = (notsystemserver.grpc.UTxO_m) obj;
 
-    if (!getTxId()
-        .equals(other.getTxId())) return false;
-    if (hasTr() != other.hasTr()) return false;
-    if (hasTr()) {
-      if (!getTr()
-          .equals(other.getTr())) return false;
+    if (hasTxId() != other.hasTxId()) return false;
+    if (hasTxId()) {
+      if (!getTxId()
+          .equals(other.getTxId())) return false;
+    }
+    if (hasAddress() != other.hasAddress()) return false;
+    if (hasAddress()) {
+      if (!getAddress()
+          .equals(other.getAddress())) return false;
     }
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
@@ -206,11 +231,13 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    hash = (37 * hash) + TX_ID_FIELD_NUMBER;
-    hash = (53 * hash) + getTxId().hashCode();
-    if (hasTr()) {
-      hash = (37 * hash) + TR_FIELD_NUMBER;
-      hash = (53 * hash) + getTr().hashCode();
+    if (hasTxId()) {
+      hash = (37 * hash) + TX_ID_FIELD_NUMBER;
+      hash = (53 * hash) + getTxId().hashCode();
+    }
+    if (hasAddress()) {
+      hash = (37 * hash) + ADDRESS_FIELD_NUMBER;
+      hash = (53 * hash) + getAddress().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -345,13 +372,17 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public Builder clear() {
       super.clear();
-      txId_ = com.google.protobuf.ByteString.EMPTY;
-
-      if (trBuilder_ == null) {
-        tr_ = null;
+      if (txIdBuilder_ == null) {
+        txId_ = null;
       } else {
-        tr_ = null;
-        trBuilder_ = null;
+        txId_ = null;
+        txIdBuilder_ = null;
+      }
+      if (addressBuilder_ == null) {
+        address_ = null;
+      } else {
+        address_ = null;
+        addressBuilder_ = null;
       }
       return this;
     }
@@ -379,11 +410,15 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public notsystemserver.grpc.UTxO_m buildPartial() {
       notsystemserver.grpc.UTxO_m result = new notsystemserver.grpc.UTxO_m(this);
-      result.txId_ = txId_;
-      if (trBuilder_ == null) {
-        result.tr_ = tr_;
+      if (txIdBuilder_ == null) {
+        result.txId_ = txId_;
       } else {
-        result.tr_ = trBuilder_.build();
+        result.txId_ = txIdBuilder_.build();
+      }
+      if (addressBuilder_ == null) {
+        result.address_ = address_;
+      } else {
+        result.address_ = addressBuilder_.build();
       }
       onBuilt();
       return result;
@@ -433,11 +468,11 @@ private static final long serialVersionUID = 0L;
 
     public Builder mergeFrom(notsystemserver.grpc.UTxO_m other) {
       if (other == notsystemserver.grpc.UTxO_m.getDefaultInstance()) return this;
-      if (other.getTxId() != com.google.protobuf.ByteString.EMPTY) {
-        setTxId(other.getTxId());
+      if (other.hasTxId()) {
+        mergeTxId(other.getTxId());
       }
-      if (other.hasTr()) {
-        mergeTr(other.getTr());
+      if (other.hasAddress()) {
+        mergeAddress(other.getAddress());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -468,157 +503,242 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private com.google.protobuf.ByteString txId_ = com.google.protobuf.ByteString.EMPTY;
+    private notsystemserver.grpc.uint128_m txId_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+        notsystemserver.grpc.uint128_m, notsystemserver.grpc.uint128_m.Builder, notsystemserver.grpc.uint128_mOrBuilder> txIdBuilder_;
     /**
-     * <code>bytes Tx_id = 1;</code>
+     * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
+     * @return Whether the txId field is set.
+     */
+    public boolean hasTxId() {
+      return txIdBuilder_ != null || txId_ != null;
+    }
+    /**
+     * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
      * @return The txId.
      */
-    @java.lang.Override
-    public com.google.protobuf.ByteString getTxId() {
-      return txId_;
-    }
-    /**
-     * <code>bytes Tx_id = 1;</code>
-     * @param value The txId to set.
-     * @return This builder for chaining.
-     */
-    public Builder setTxId(com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      txId_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>bytes Tx_id = 1;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearTxId() {
-      
-      txId_ = getDefaultInstance().getTxId();
-      onChanged();
-      return this;
-    }
-
-    private notsystemserver.grpc.TR_m tr_;
-    private com.google.protobuf.SingleFieldBuilderV3<
-        notsystemserver.grpc.TR_m, notsystemserver.grpc.TR_m.Builder, notsystemserver.grpc.TR_mOrBuilder> trBuilder_;
-    /**
-     * <code>.notsystemserver.grpc.TR_m tr = 2;</code>
-     * @return Whether the tr field is set.
-     */
-    public boolean hasTr() {
-      return trBuilder_ != null || tr_ != null;
-    }
-    /**
-     * <code>.notsystemserver.grpc.TR_m tr = 2;</code>
-     * @return The tr.
-     */
-    public notsystemserver.grpc.TR_m getTr() {
-      if (trBuilder_ == null) {
-        return tr_ == null ? notsystemserver.grpc.TR_m.getDefaultInstance() : tr_;
+    public notsystemserver.grpc.uint128_m getTxId() {
+      if (txIdBuilder_ == null) {
+        return txId_ == null ? notsystemserver.grpc.uint128_m.getDefaultInstance() : txId_;
       } else {
-        return trBuilder_.getMessage();
+        return txIdBuilder_.getMessage();
       }
     }
     /**
-     * <code>.notsystemserver.grpc.TR_m tr = 2;</code>
+     * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
      */
-    public Builder setTr(notsystemserver.grpc.TR_m value) {
-      if (trBuilder_ == null) {
+    public Builder setTxId(notsystemserver.grpc.uint128_m value) {
+      if (txIdBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        tr_ = value;
+        txId_ = value;
         onChanged();
       } else {
-        trBuilder_.setMessage(value);
+        txIdBuilder_.setMessage(value);
       }
 
       return this;
     }
     /**
-     * <code>.notsystemserver.grpc.TR_m tr = 2;</code>
+     * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
      */
-    public Builder setTr(
-        notsystemserver.grpc.TR_m.Builder builderForValue) {
-      if (trBuilder_ == null) {
-        tr_ = builderForValue.build();
+    public Builder setTxId(
+        notsystemserver.grpc.uint128_m.Builder builderForValue) {
+      if (txIdBuilder_ == null) {
+        txId_ = builderForValue.build();
         onChanged();
       } else {
-        trBuilder_.setMessage(builderForValue.build());
+        txIdBuilder_.setMessage(builderForValue.build());
       }
 
       return this;
     }
     /**
-     * <code>.notsystemserver.grpc.TR_m tr = 2;</code>
+     * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
      */
-    public Builder mergeTr(notsystemserver.grpc.TR_m value) {
-      if (trBuilder_ == null) {
-        if (tr_ != null) {
-          tr_ =
-            notsystemserver.grpc.TR_m.newBuilder(tr_).mergeFrom(value).buildPartial();
+    public Builder mergeTxId(notsystemserver.grpc.uint128_m value) {
+      if (txIdBuilder_ == null) {
+        if (txId_ != null) {
+          txId_ =
+            notsystemserver.grpc.uint128_m.newBuilder(txId_).mergeFrom(value).buildPartial();
         } else {
-          tr_ = value;
+          txId_ = value;
         }
         onChanged();
       } else {
-        trBuilder_.mergeFrom(value);
+        txIdBuilder_.mergeFrom(value);
       }
 
       return this;
     }
     /**
-     * <code>.notsystemserver.grpc.TR_m tr = 2;</code>
+     * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
      */
-    public Builder clearTr() {
-      if (trBuilder_ == null) {
-        tr_ = null;
+    public Builder clearTxId() {
+      if (txIdBuilder_ == null) {
+        txId_ = null;
         onChanged();
       } else {
-        tr_ = null;
-        trBuilder_ = null;
+        txId_ = null;
+        txIdBuilder_ = null;
       }
 
       return this;
     }
     /**
-     * <code>.notsystemserver.grpc.TR_m tr = 2;</code>
+     * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
      */
-    public notsystemserver.grpc.TR_m.Builder getTrBuilder() {
+    public notsystemserver.grpc.uint128_m.Builder getTxIdBuilder() {
       
       onChanged();
-      return getTrFieldBuilder().getBuilder();
+      return getTxIdFieldBuilder().getBuilder();
     }
     /**
-     * <code>.notsystemserver.grpc.TR_m tr = 2;</code>
+     * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
      */
-    public notsystemserver.grpc.TR_mOrBuilder getTrOrBuilder() {
-      if (trBuilder_ != null) {
-        return trBuilder_.getMessageOrBuilder();
+    public notsystemserver.grpc.uint128_mOrBuilder getTxIdOrBuilder() {
+      if (txIdBuilder_ != null) {
+        return txIdBuilder_.getMessageOrBuilder();
       } else {
-        return tr_ == null ?
-            notsystemserver.grpc.TR_m.getDefaultInstance() : tr_;
+        return txId_ == null ?
+            notsystemserver.grpc.uint128_m.getDefaultInstance() : txId_;
       }
     }
     /**
-     * <code>.notsystemserver.grpc.TR_m tr = 2;</code>
+     * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-        notsystemserver.grpc.TR_m, notsystemserver.grpc.TR_m.Builder, notsystemserver.grpc.TR_mOrBuilder> 
-        getTrFieldBuilder() {
-      if (trBuilder_ == null) {
-        trBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-            notsystemserver.grpc.TR_m, notsystemserver.grpc.TR_m.Builder, notsystemserver.grpc.TR_mOrBuilder>(
-                getTr(),
+        notsystemserver.grpc.uint128_m, notsystemserver.grpc.uint128_m.Builder, notsystemserver.grpc.uint128_mOrBuilder> 
+        getTxIdFieldBuilder() {
+      if (txIdBuilder_ == null) {
+        txIdBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            notsystemserver.grpc.uint128_m, notsystemserver.grpc.uint128_m.Builder, notsystemserver.grpc.uint128_mOrBuilder>(
+                getTxId(),
                 getParentForChildren(),
                 isClean());
-        tr_ = null;
+        txId_ = null;
       }
-      return trBuilder_;
+      return txIdBuilder_;
+    }
+
+    private notsystemserver.grpc.uint128_m address_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+        notsystemserver.grpc.uint128_m, notsystemserver.grpc.uint128_m.Builder, notsystemserver.grpc.uint128_mOrBuilder> addressBuilder_;
+    /**
+     * <code>.notsystemserver.grpc.uint128_m address = 2;</code>
+     * @return Whether the address field is set.
+     */
+    public boolean hasAddress() {
+      return addressBuilder_ != null || address_ != null;
+    }
+    /**
+     * <code>.notsystemserver.grpc.uint128_m address = 2;</code>
+     * @return The address.
+     */
+    public notsystemserver.grpc.uint128_m getAddress() {
+      if (addressBuilder_ == null) {
+        return address_ == null ? notsystemserver.grpc.uint128_m.getDefaultInstance() : address_;
+      } else {
+        return addressBuilder_.getMessage();
+      }
+    }
+    /**
+     * <code>.notsystemserver.grpc.uint128_m address = 2;</code>
+     */
+    public Builder setAddress(notsystemserver.grpc.uint128_m value) {
+      if (addressBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        address_ = value;
+        onChanged();
+      } else {
+        addressBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.notsystemserver.grpc.uint128_m address = 2;</code>
+     */
+    public Builder setAddress(
+        notsystemserver.grpc.uint128_m.Builder builderForValue) {
+      if (addressBuilder_ == null) {
+        address_ = builderForValue.build();
+        onChanged();
+      } else {
+        addressBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     * <code>.notsystemserver.grpc.uint128_m address = 2;</code>
+     */
+    public Builder mergeAddress(notsystemserver.grpc.uint128_m value) {
+      if (addressBuilder_ == null) {
+        if (address_ != null) {
+          address_ =
+            notsystemserver.grpc.uint128_m.newBuilder(address_).mergeFrom(value).buildPartial();
+        } else {
+          address_ = value;
+        }
+        onChanged();
+      } else {
+        addressBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.notsystemserver.grpc.uint128_m address = 2;</code>
+     */
+    public Builder clearAddress() {
+      if (addressBuilder_ == null) {
+        address_ = null;
+        onChanged();
+      } else {
+        address_ = null;
+        addressBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     * <code>.notsystemserver.grpc.uint128_m address = 2;</code>
+     */
+    public notsystemserver.grpc.uint128_m.Builder getAddressBuilder() {
+      
+      onChanged();
+      return getAddressFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.notsystemserver.grpc.uint128_m address = 2;</code>
+     */
+    public notsystemserver.grpc.uint128_mOrBuilder getAddressOrBuilder() {
+      if (addressBuilder_ != null) {
+        return addressBuilder_.getMessageOrBuilder();
+      } else {
+        return address_ == null ?
+            notsystemserver.grpc.uint128_m.getDefaultInstance() : address_;
+      }
+    }
+    /**
+     * <code>.notsystemserver.grpc.uint128_m address = 2;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        notsystemserver.grpc.uint128_m, notsystemserver.grpc.uint128_m.Builder, notsystemserver.grpc.uint128_mOrBuilder> 
+        getAddressFieldBuilder() {
+      if (addressBuilder_ == null) {
+        addressBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            notsystemserver.grpc.uint128_m, notsystemserver.grpc.uint128_m.Builder, notsystemserver.grpc.uint128_mOrBuilder>(
+                getAddress(),
+                getParentForChildren(),
+                isClean());
+        address_ = null;
+      }
+      return addressBuilder_;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

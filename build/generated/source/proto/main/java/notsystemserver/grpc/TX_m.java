@@ -16,9 +16,6 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private TX_m() {
-    txId_ = com.google.protobuf.ByteString.EMPTY;
-    sender_ = com.google.protobuf.ByteString.EMPTY;
-    receiver_ = com.google.protobuf.ByteString.EMPTY;
     utxos_ = java.util.Collections.emptyList();
     trs_ = java.util.Collections.emptyList();
   }
@@ -55,23 +52,16 @@ private static final long serialVersionUID = 0L;
             done = true;
             break;
           case 10: {
+            notsystemserver.grpc.uint128_m.Builder subBuilder = null;
+            if (txId_ != null) {
+              subBuilder = txId_.toBuilder();
+            }
+            txId_ = input.readMessage(notsystemserver.grpc.uint128_m.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(txId_);
+              txId_ = subBuilder.buildPartial();
+            }
 
-            txId_ = input.readBytes();
-            break;
-          }
-          case 18: {
-
-            sender_ = input.readBytes();
-            break;
-          }
-          case 26: {
-
-            receiver_ = input.readBytes();
-            break;
-          }
-          case 32: {
-
-            amount_ = input.readUInt64();
             break;
           }
           case 40: {
@@ -136,47 +126,29 @@ private static final long serialVersionUID = 0L;
   }
 
   public static final int TX_ID_FIELD_NUMBER = 1;
-  private com.google.protobuf.ByteString txId_;
+  private notsystemserver.grpc.uint128_m txId_;
   /**
-   * <code>bytes Tx_id = 1;</code>
+   * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
+   * @return Whether the txId field is set.
+   */
+  @java.lang.Override
+  public boolean hasTxId() {
+    return txId_ != null;
+  }
+  /**
+   * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
    * @return The txId.
    */
   @java.lang.Override
-  public com.google.protobuf.ByteString getTxId() {
-    return txId_;
+  public notsystemserver.grpc.uint128_m getTxId() {
+    return txId_ == null ? notsystemserver.grpc.uint128_m.getDefaultInstance() : txId_;
   }
-
-  public static final int SENDER_FIELD_NUMBER = 2;
-  private com.google.protobuf.ByteString sender_;
   /**
-   * <code>bytes sender = 2;</code>
-   * @return The sender.
+   * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
    */
   @java.lang.Override
-  public com.google.protobuf.ByteString getSender() {
-    return sender_;
-  }
-
-  public static final int RECEIVER_FIELD_NUMBER = 3;
-  private com.google.protobuf.ByteString receiver_;
-  /**
-   * <code>bytes receiver = 3;</code>
-   * @return The receiver.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString getReceiver() {
-    return receiver_;
-  }
-
-  public static final int AMOUNT_FIELD_NUMBER = 4;
-  private long amount_;
-  /**
-   * <code>uint64 amount = 4;</code>
-   * @return The amount.
-   */
-  @java.lang.Override
-  public long getAmount() {
-    return amount_;
+  public notsystemserver.grpc.uint128_mOrBuilder getTxIdOrBuilder() {
+    return getTxId();
   }
 
   public static final int TIMESTAMP_FIELD_NUMBER = 5;
@@ -284,17 +256,8 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (!txId_.isEmpty()) {
-      output.writeBytes(1, txId_);
-    }
-    if (!sender_.isEmpty()) {
-      output.writeBytes(2, sender_);
-    }
-    if (!receiver_.isEmpty()) {
-      output.writeBytes(3, receiver_);
-    }
-    if (amount_ != 0L) {
-      output.writeUInt64(4, amount_);
+    if (txId_ != null) {
+      output.writeMessage(1, getTxId());
     }
     if (timestamp_ != 0L) {
       output.writeUInt64(5, timestamp_);
@@ -314,21 +277,9 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (!txId_.isEmpty()) {
+    if (txId_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeBytesSize(1, txId_);
-    }
-    if (!sender_.isEmpty()) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeBytesSize(2, sender_);
-    }
-    if (!receiver_.isEmpty()) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeBytesSize(3, receiver_);
-    }
-    if (amount_ != 0L) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeUInt64Size(4, amount_);
+        .computeMessageSize(1, getTxId());
     }
     if (timestamp_ != 0L) {
       size += com.google.protobuf.CodedOutputStream
@@ -357,14 +308,11 @@ private static final long serialVersionUID = 0L;
     }
     notsystemserver.grpc.TX_m other = (notsystemserver.grpc.TX_m) obj;
 
-    if (!getTxId()
-        .equals(other.getTxId())) return false;
-    if (!getSender()
-        .equals(other.getSender())) return false;
-    if (!getReceiver()
-        .equals(other.getReceiver())) return false;
-    if (getAmount()
-        != other.getAmount()) return false;
+    if (hasTxId() != other.hasTxId()) return false;
+    if (hasTxId()) {
+      if (!getTxId()
+          .equals(other.getTxId())) return false;
+    }
     if (getTimestamp()
         != other.getTimestamp()) return false;
     if (!getUtxosList()
@@ -382,15 +330,10 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    hash = (37 * hash) + TX_ID_FIELD_NUMBER;
-    hash = (53 * hash) + getTxId().hashCode();
-    hash = (37 * hash) + SENDER_FIELD_NUMBER;
-    hash = (53 * hash) + getSender().hashCode();
-    hash = (37 * hash) + RECEIVER_FIELD_NUMBER;
-    hash = (53 * hash) + getReceiver().hashCode();
-    hash = (37 * hash) + AMOUNT_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-        getAmount());
+    if (hasTxId()) {
+      hash = (37 * hash) + TX_ID_FIELD_NUMBER;
+      hash = (53 * hash) + getTxId().hashCode();
+    }
     hash = (37 * hash) + TIMESTAMP_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
         getTimestamp());
@@ -537,14 +480,12 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public Builder clear() {
       super.clear();
-      txId_ = com.google.protobuf.ByteString.EMPTY;
-
-      sender_ = com.google.protobuf.ByteString.EMPTY;
-
-      receiver_ = com.google.protobuf.ByteString.EMPTY;
-
-      amount_ = 0L;
-
+      if (txIdBuilder_ == null) {
+        txId_ = null;
+      } else {
+        txId_ = null;
+        txIdBuilder_ = null;
+      }
       timestamp_ = 0L;
 
       if (utxosBuilder_ == null) {
@@ -586,10 +527,11 @@ private static final long serialVersionUID = 0L;
     public notsystemserver.grpc.TX_m buildPartial() {
       notsystemserver.grpc.TX_m result = new notsystemserver.grpc.TX_m(this);
       int from_bitField0_ = bitField0_;
-      result.txId_ = txId_;
-      result.sender_ = sender_;
-      result.receiver_ = receiver_;
-      result.amount_ = amount_;
+      if (txIdBuilder_ == null) {
+        result.txId_ = txId_;
+      } else {
+        result.txId_ = txIdBuilder_.build();
+      }
       result.timestamp_ = timestamp_;
       if (utxosBuilder_ == null) {
         if (((bitField0_ & 0x00000001) != 0)) {
@@ -657,17 +599,8 @@ private static final long serialVersionUID = 0L;
 
     public Builder mergeFrom(notsystemserver.grpc.TX_m other) {
       if (other == notsystemserver.grpc.TX_m.getDefaultInstance()) return this;
-      if (other.getTxId() != com.google.protobuf.ByteString.EMPTY) {
-        setTxId(other.getTxId());
-      }
-      if (other.getSender() != com.google.protobuf.ByteString.EMPTY) {
-        setSender(other.getSender());
-      }
-      if (other.getReceiver() != com.google.protobuf.ByteString.EMPTY) {
-        setReceiver(other.getReceiver());
-      }
-      if (other.getAmount() != 0L) {
-        setAmount(other.getAmount());
+      if (other.hasTxId()) {
+        mergeTxId(other.getTxId());
       }
       if (other.getTimestamp() != 0L) {
         setTimestamp(other.getTimestamp());
@@ -754,137 +687,123 @@ private static final long serialVersionUID = 0L;
     }
     private int bitField0_;
 
-    private com.google.protobuf.ByteString txId_ = com.google.protobuf.ByteString.EMPTY;
+    private notsystemserver.grpc.uint128_m txId_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+        notsystemserver.grpc.uint128_m, notsystemserver.grpc.uint128_m.Builder, notsystemserver.grpc.uint128_mOrBuilder> txIdBuilder_;
     /**
-     * <code>bytes Tx_id = 1;</code>
+     * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
+     * @return Whether the txId field is set.
+     */
+    public boolean hasTxId() {
+      return txIdBuilder_ != null || txId_ != null;
+    }
+    /**
+     * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
      * @return The txId.
      */
-    @java.lang.Override
-    public com.google.protobuf.ByteString getTxId() {
-      return txId_;
+    public notsystemserver.grpc.uint128_m getTxId() {
+      if (txIdBuilder_ == null) {
+        return txId_ == null ? notsystemserver.grpc.uint128_m.getDefaultInstance() : txId_;
+      } else {
+        return txIdBuilder_.getMessage();
+      }
     }
     /**
-     * <code>bytes Tx_id = 1;</code>
-     * @param value The txId to set.
-     * @return This builder for chaining.
+     * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
      */
-    public Builder setTxId(com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      txId_ = value;
-      onChanged();
+    public Builder setTxId(notsystemserver.grpc.uint128_m value) {
+      if (txIdBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        txId_ = value;
+        onChanged();
+      } else {
+        txIdBuilder_.setMessage(value);
+      }
+
       return this;
     }
     /**
-     * <code>bytes Tx_id = 1;</code>
-     * @return This builder for chaining.
+     * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
+     */
+    public Builder setTxId(
+        notsystemserver.grpc.uint128_m.Builder builderForValue) {
+      if (txIdBuilder_ == null) {
+        txId_ = builderForValue.build();
+        onChanged();
+      } else {
+        txIdBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
+     */
+    public Builder mergeTxId(notsystemserver.grpc.uint128_m value) {
+      if (txIdBuilder_ == null) {
+        if (txId_ != null) {
+          txId_ =
+            notsystemserver.grpc.uint128_m.newBuilder(txId_).mergeFrom(value).buildPartial();
+        } else {
+          txId_ = value;
+        }
+        onChanged();
+      } else {
+        txIdBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
      */
     public Builder clearTxId() {
-      
-      txId_ = getDefaultInstance().getTxId();
-      onChanged();
-      return this;
-    }
+      if (txIdBuilder_ == null) {
+        txId_ = null;
+        onChanged();
+      } else {
+        txId_ = null;
+        txIdBuilder_ = null;
+      }
 
-    private com.google.protobuf.ByteString sender_ = com.google.protobuf.ByteString.EMPTY;
-    /**
-     * <code>bytes sender = 2;</code>
-     * @return The sender.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString getSender() {
-      return sender_;
-    }
-    /**
-     * <code>bytes sender = 2;</code>
-     * @param value The sender to set.
-     * @return This builder for chaining.
-     */
-    public Builder setSender(com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      sender_ = value;
-      onChanged();
       return this;
     }
     /**
-     * <code>bytes sender = 2;</code>
-     * @return This builder for chaining.
+     * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
      */
-    public Builder clearSender() {
+    public notsystemserver.grpc.uint128_m.Builder getTxIdBuilder() {
       
-      sender_ = getDefaultInstance().getSender();
       onChanged();
-      return this;
-    }
-
-    private com.google.protobuf.ByteString receiver_ = com.google.protobuf.ByteString.EMPTY;
-    /**
-     * <code>bytes receiver = 3;</code>
-     * @return The receiver.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString getReceiver() {
-      return receiver_;
+      return getTxIdFieldBuilder().getBuilder();
     }
     /**
-     * <code>bytes receiver = 3;</code>
-     * @param value The receiver to set.
-     * @return This builder for chaining.
+     * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
      */
-    public Builder setReceiver(com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      receiver_ = value;
-      onChanged();
-      return this;
+    public notsystemserver.grpc.uint128_mOrBuilder getTxIdOrBuilder() {
+      if (txIdBuilder_ != null) {
+        return txIdBuilder_.getMessageOrBuilder();
+      } else {
+        return txId_ == null ?
+            notsystemserver.grpc.uint128_m.getDefaultInstance() : txId_;
+      }
     }
     /**
-     * <code>bytes receiver = 3;</code>
-     * @return This builder for chaining.
+     * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
      */
-    public Builder clearReceiver() {
-      
-      receiver_ = getDefaultInstance().getReceiver();
-      onChanged();
-      return this;
-    }
-
-    private long amount_ ;
-    /**
-     * <code>uint64 amount = 4;</code>
-     * @return The amount.
-     */
-    @java.lang.Override
-    public long getAmount() {
-      return amount_;
-    }
-    /**
-     * <code>uint64 amount = 4;</code>
-     * @param value The amount to set.
-     * @return This builder for chaining.
-     */
-    public Builder setAmount(long value) {
-      
-      amount_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>uint64 amount = 4;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearAmount() {
-      
-      amount_ = 0L;
-      onChanged();
-      return this;
+    private com.google.protobuf.SingleFieldBuilderV3<
+        notsystemserver.grpc.uint128_m, notsystemserver.grpc.uint128_m.Builder, notsystemserver.grpc.uint128_mOrBuilder> 
+        getTxIdFieldBuilder() {
+      if (txIdBuilder_ == null) {
+        txIdBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            notsystemserver.grpc.uint128_m, notsystemserver.grpc.uint128_m.Builder, notsystemserver.grpc.uint128_mOrBuilder>(
+                getTxId(),
+                getParentForChildren(),
+                isClean());
+        txId_ = null;
+      }
+      return txIdBuilder_;
     }
 
     private long timestamp_ ;

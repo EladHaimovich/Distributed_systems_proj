@@ -8,28 +8,32 @@ import java.util.Objects;
 
 public class TR {
 
-    byte[] address;
-    long amount;
-    public TR(byte[] address, long coins) {
+    uint128 address;
+    long coins;
+    public TR(uint128 address, long coins) {
         this.address = address.clone();
-        this.amount = coins;
+        this.coins = coins;
     }
 
     public TR(TR_m tr_m) {
-        address = tr_m.getAddress().toByteArray().clone();
-        amount = tr_m.getCoins();
+        address = new uint128(tr_m.getAddress());
+        coins = tr_m.getCoins();
     }
 
     public TR_m to_tr_m() {
-        return TR_m.newBuilder().setAddress(ByteString.copyFrom(address)).setCoins(amount).build();
+        return TR_m.newBuilder().setAddress(address.to_grpc()).setCoins(coins).build();
     }
 
-    public byte[] getAddress() {
+    public uint128 getAddress() {
         return address.clone();
     }
 
     public long getAmount() {
-        return amount;
+        return coins;
+    }
+
+    public TR clone() {
+        return new TR(this.address, this.coins);
     }
 
     @Override
@@ -37,17 +41,11 @@ public class TR {
         if (this == o) return true;
         if (!(o instanceof TR)) return false;
         TR tr = (TR) o;
-        return getAmount() == tr.getAmount() && Arrays.equals(getAddress(), tr.getAddress());
+        return coins == tr.coins && getAddress().equals(tr.getAddress());
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(getAmount());
-        result = 31 * result + Arrays.hashCode(getAddress());
-        return result;
-    }
-
-    public TR clone() {
-        return new TR(this.address, this.amount);
+        return Objects.hash(getAddress(), coins);
     }
 }

@@ -8,23 +8,32 @@ public interface UTxO_mOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>bytes Tx_id = 1;</code>
+   * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
+   * @return Whether the txId field is set.
+   */
+  boolean hasTxId();
+  /**
+   * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
    * @return The txId.
    */
-  com.google.protobuf.ByteString getTxId();
+  notsystemserver.grpc.uint128_m getTxId();
+  /**
+   * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
+   */
+  notsystemserver.grpc.uint128_mOrBuilder getTxIdOrBuilder();
 
   /**
-   * <code>.notsystemserver.grpc.TR_m tr = 2;</code>
-   * @return Whether the tr field is set.
+   * <code>.notsystemserver.grpc.uint128_m address = 2;</code>
+   * @return Whether the address field is set.
    */
-  boolean hasTr();
+  boolean hasAddress();
   /**
-   * <code>.notsystemserver.grpc.TR_m tr = 2;</code>
-   * @return The tr.
+   * <code>.notsystemserver.grpc.uint128_m address = 2;</code>
+   * @return The address.
    */
-  notsystemserver.grpc.TR_m getTr();
+  notsystemserver.grpc.uint128_m getAddress();
   /**
-   * <code>.notsystemserver.grpc.TR_m tr = 2;</code>
+   * <code>.notsystemserver.grpc.uint128_m address = 2;</code>
    */
-  notsystemserver.grpc.TR_mOrBuilder getTrOrBuilder();
+  notsystemserver.grpc.uint128_mOrBuilder getAddressOrBuilder();
 }

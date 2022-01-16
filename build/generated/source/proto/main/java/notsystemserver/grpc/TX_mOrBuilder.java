@@ -8,28 +8,19 @@ public interface TX_mOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>bytes Tx_id = 1;</code>
+   * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
+   * @return Whether the txId field is set.
+   */
+  boolean hasTxId();
+  /**
+   * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
    * @return The txId.
    */
-  com.google.protobuf.ByteString getTxId();
-
+  notsystemserver.grpc.uint128_m getTxId();
   /**
-   * <code>bytes sender = 2;</code>
-   * @return The sender.
+   * <code>.notsystemserver.grpc.uint128_m Tx_id = 1;</code>
    */
-  com.google.protobuf.ByteString getSender();
-
-  /**
-   * <code>bytes receiver = 3;</code>
-   * @return The receiver.
-   */
-  com.google.protobuf.ByteString getReceiver();
-
-  /**
-   * <code>uint64 amount = 4;</code>
-   * @return The amount.
-   */
-  long getAmount();
+  notsystemserver.grpc.uint128_mOrBuilder getTxIdOrBuilder();
 
   /**
    * <code>uint64 timestamp = 5;</code>

@@ -8,10 +8,19 @@ public interface TR_mOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>bytes address = 1;</code>
+   * <code>.notsystemserver.grpc.uint128_m address = 1;</code>
+   * @return Whether the address field is set.
+   */
+  boolean hasAddress();
+  /**
+   * <code>.notsystemserver.grpc.uint128_m address = 1;</code>
    * @return The address.
    */
-  com.google.protobuf.ByteString getAddress();
+  notsystemserver.grpc.uint128_m getAddress();
+  /**
+   * <code>.notsystemserver.grpc.uint128_m address = 1;</code>
+   */
+  notsystemserver.grpc.uint128_mOrBuilder getAddressOrBuilder();
 
   /**
    * <code>uint64 coins = 2;</code>

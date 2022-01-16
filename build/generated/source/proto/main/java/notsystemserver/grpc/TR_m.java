@@ -16,7 +16,6 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private TR_m() {
-    address_ = com.google.protobuf.ByteString.EMPTY;
   }
 
   @java.lang.Override
@@ -50,8 +49,16 @@ private static final long serialVersionUID = 0L;
             done = true;
             break;
           case 10: {
+            notsystemserver.grpc.uint128_m.Builder subBuilder = null;
+            if (address_ != null) {
+              subBuilder = address_.toBuilder();
+            }
+            address_ = input.readMessage(notsystemserver.grpc.uint128_m.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(address_);
+              address_ = subBuilder.buildPartial();
+            }
 
-            address_ = input.readBytes();
             break;
           }
           case 16: {
@@ -92,14 +99,29 @@ private static final long serialVersionUID = 0L;
   }
 
   public static final int ADDRESS_FIELD_NUMBER = 1;
-  private com.google.protobuf.ByteString address_;
+  private notsystemserver.grpc.uint128_m address_;
   /**
-   * <code>bytes address = 1;</code>
+   * <code>.notsystemserver.grpc.uint128_m address = 1;</code>
+   * @return Whether the address field is set.
+   */
+  @java.lang.Override
+  public boolean hasAddress() {
+    return address_ != null;
+  }
+  /**
+   * <code>.notsystemserver.grpc.uint128_m address = 1;</code>
    * @return The address.
    */
   @java.lang.Override
-  public com.google.protobuf.ByteString getAddress() {
-    return address_;
+  public notsystemserver.grpc.uint128_m getAddress() {
+    return address_ == null ? notsystemserver.grpc.uint128_m.getDefaultInstance() : address_;
+  }
+  /**
+   * <code>.notsystemserver.grpc.uint128_m address = 1;</code>
+   */
+  @java.lang.Override
+  public notsystemserver.grpc.uint128_mOrBuilder getAddressOrBuilder() {
+    return getAddress();
   }
 
   public static final int COINS_FIELD_NUMBER = 2;
@@ -127,8 +149,8 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (!address_.isEmpty()) {
-      output.writeBytes(1, address_);
+    if (address_ != null) {
+      output.writeMessage(1, getAddress());
     }
     if (coins_ != 0L) {
       output.writeUInt64(2, coins_);
@@ -142,9 +164,9 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (!address_.isEmpty()) {
+    if (address_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeBytesSize(1, address_);
+        .computeMessageSize(1, getAddress());
     }
     if (coins_ != 0L) {
       size += com.google.protobuf.CodedOutputStream
@@ -165,8 +187,11 @@ private static final long serialVersionUID = 0L;
     }
     notsystemserver.grpc.TR_m other = (notsystemserver.grpc.TR_m) obj;
 
-    if (!getAddress()
-        .equals(other.getAddress())) return false;
+    if (hasAddress() != other.hasAddress()) return false;
+    if (hasAddress()) {
+      if (!getAddress()
+          .equals(other.getAddress())) return false;
+    }
     if (getCoins()
         != other.getCoins()) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
@@ -180,8 +205,10 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    hash = (37 * hash) + ADDRESS_FIELD_NUMBER;
-    hash = (53 * hash) + getAddress().hashCode();
+    if (hasAddress()) {
+      hash = (37 * hash) + ADDRESS_FIELD_NUMBER;
+      hash = (53 * hash) + getAddress().hashCode();
+    }
     hash = (37 * hash) + COINS_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
         getCoins());
@@ -318,8 +345,12 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public Builder clear() {
       super.clear();
-      address_ = com.google.protobuf.ByteString.EMPTY;
-
+      if (addressBuilder_ == null) {
+        address_ = null;
+      } else {
+        address_ = null;
+        addressBuilder_ = null;
+      }
       coins_ = 0L;
 
       return this;
@@ -348,7 +379,11 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public notsystemserver.grpc.TR_m buildPartial() {
       notsystemserver.grpc.TR_m result = new notsystemserver.grpc.TR_m(this);
-      result.address_ = address_;
+      if (addressBuilder_ == null) {
+        result.address_ = address_;
+      } else {
+        result.address_ = addressBuilder_.build();
+      }
       result.coins_ = coins_;
       onBuilt();
       return result;
@@ -398,8 +433,8 @@ private static final long serialVersionUID = 0L;
 
     public Builder mergeFrom(notsystemserver.grpc.TR_m other) {
       if (other == notsystemserver.grpc.TR_m.getDefaultInstance()) return this;
-      if (other.getAddress() != com.google.protobuf.ByteString.EMPTY) {
-        setAddress(other.getAddress());
+      if (other.hasAddress()) {
+        mergeAddress(other.getAddress());
       }
       if (other.getCoins() != 0L) {
         setCoins(other.getCoins());
@@ -433,38 +468,123 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private com.google.protobuf.ByteString address_ = com.google.protobuf.ByteString.EMPTY;
+    private notsystemserver.grpc.uint128_m address_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+        notsystemserver.grpc.uint128_m, notsystemserver.grpc.uint128_m.Builder, notsystemserver.grpc.uint128_mOrBuilder> addressBuilder_;
     /**
-     * <code>bytes address = 1;</code>
+     * <code>.notsystemserver.grpc.uint128_m address = 1;</code>
+     * @return Whether the address field is set.
+     */
+    public boolean hasAddress() {
+      return addressBuilder_ != null || address_ != null;
+    }
+    /**
+     * <code>.notsystemserver.grpc.uint128_m address = 1;</code>
      * @return The address.
      */
-    @java.lang.Override
-    public com.google.protobuf.ByteString getAddress() {
-      return address_;
+    public notsystemserver.grpc.uint128_m getAddress() {
+      if (addressBuilder_ == null) {
+        return address_ == null ? notsystemserver.grpc.uint128_m.getDefaultInstance() : address_;
+      } else {
+        return addressBuilder_.getMessage();
+      }
     }
     /**
-     * <code>bytes address = 1;</code>
-     * @param value The address to set.
-     * @return This builder for chaining.
+     * <code>.notsystemserver.grpc.uint128_m address = 1;</code>
      */
-    public Builder setAddress(com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      address_ = value;
-      onChanged();
+    public Builder setAddress(notsystemserver.grpc.uint128_m value) {
+      if (addressBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        address_ = value;
+        onChanged();
+      } else {
+        addressBuilder_.setMessage(value);
+      }
+
       return this;
     }
     /**
-     * <code>bytes address = 1;</code>
-     * @return This builder for chaining.
+     * <code>.notsystemserver.grpc.uint128_m address = 1;</code>
+     */
+    public Builder setAddress(
+        notsystemserver.grpc.uint128_m.Builder builderForValue) {
+      if (addressBuilder_ == null) {
+        address_ = builderForValue.build();
+        onChanged();
+      } else {
+        addressBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     * <code>.notsystemserver.grpc.uint128_m address = 1;</code>
+     */
+    public Builder mergeAddress(notsystemserver.grpc.uint128_m value) {
+      if (addressBuilder_ == null) {
+        if (address_ != null) {
+          address_ =
+            notsystemserver.grpc.uint128_m.newBuilder(address_).mergeFrom(value).buildPartial();
+        } else {
+          address_ = value;
+        }
+        onChanged();
+      } else {
+        addressBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.notsystemserver.grpc.uint128_m address = 1;</code>
      */
     public Builder clearAddress() {
-      
-      address_ = getDefaultInstance().getAddress();
-      onChanged();
+      if (addressBuilder_ == null) {
+        address_ = null;
+        onChanged();
+      } else {
+        address_ = null;
+        addressBuilder_ = null;
+      }
+
       return this;
+    }
+    /**
+     * <code>.notsystemserver.grpc.uint128_m address = 1;</code>
+     */
+    public notsystemserver.grpc.uint128_m.Builder getAddressBuilder() {
+      
+      onChanged();
+      return getAddressFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.notsystemserver.grpc.uint128_m address = 1;</code>
+     */
+    public notsystemserver.grpc.uint128_mOrBuilder getAddressOrBuilder() {
+      if (addressBuilder_ != null) {
+        return addressBuilder_.getMessageOrBuilder();
+      } else {
+        return address_ == null ?
+            notsystemserver.grpc.uint128_m.getDefaultInstance() : address_;
+      }
+    }
+    /**
+     * <code>.notsystemserver.grpc.uint128_m address = 1;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        notsystemserver.grpc.uint128_m, notsystemserver.grpc.uint128_m.Builder, notsystemserver.grpc.uint128_mOrBuilder> 
+        getAddressFieldBuilder() {
+      if (addressBuilder_ == null) {
+        addressBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            notsystemserver.grpc.uint128_m, notsystemserver.grpc.uint128_m.Builder, notsystemserver.grpc.uint128_mOrBuilder>(
+                getAddress(),
+                getParentForChildren(),
+                isClean());
+        address_ = null;
+      }
+      return addressBuilder_;
     }
 
     private long coins_ ;

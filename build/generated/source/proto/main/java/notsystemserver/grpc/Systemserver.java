@@ -20,6 +20,11 @@ public final class Systemserver {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_notsystemserver_grpc_Init_Server_Args_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_notsystemserver_grpc_uint128_m_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_notsystemserver_grpc_uint128_m_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
     internal_static_notsystemserver_grpc_TR_m_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -35,15 +40,25 @@ public final class Systemserver {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_notsystemserver_grpc_TX_m_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_notsystemserver_grpc_Send_Coins_req_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_notsystemserver_grpc_Send_Coins_req_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
     internal_static_notsystemserver_grpc_Response_status_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_notsystemserver_grpc_Response_status_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_notsystemserver_grpc_Submit_Transaction_list_Req_descriptor;
+    internal_static_notsystemserver_grpc_UTxO_list_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_notsystemserver_grpc_Submit_Transaction_list_Req_fieldAccessorTable;
+      internal_static_notsystemserver_grpc_UTxO_list_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_notsystemserver_grpc_Transaction_list_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_notsystemserver_grpc_Transaction_list_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -54,30 +69,41 @@ public final class Systemserver {
   static {
     java.lang.String[] descriptorData = {
       "\n\022systemserver.proto\022\024notsystemserver.gr" +
-      "pc\"\022\n\020Init_Server_Args\"&\n\004TR_m\022\017\n\007addres" +
-      "s\030\001 \001(\014\022\r\n\005coins\030\002 \001(\004\"?\n\006UTxO_m\022\r\n\005Tx_i" +
-      "d\030\001 \001(\014\022&\n\002tr\030\002 \001(\0132\032.notsystemserver.gr" +
-      "pc.TR_m\"\260\001\n\004TX_m\022\r\n\005Tx_id\030\001 \001(\014\022\016\n\006sende" +
-      "r\030\002 \001(\014\022\020\n\010receiver\030\003 \001(\014\022\016\n\006amount\030\004 \001(" +
-      "\004\022\021\n\ttimestamp\030\005 \001(\004\022+\n\005utxos\030\006 \003(\0132\034.no" +
-      "tsystemserver.grpc.UTxO_m\022\'\n\003trs\030\007 \003(\0132\032" +
-      ".notsystemserver.grpc.TR_m\"#\n\017Response_s" +
-      "tatus\022\020\n\010response\030\001 \001(\t\"K\n\033Submit_Transa" +
-      "ction_list_Req\022,\n\010requests\030\001 \003(\0132\032.notsy" +
-      "stemserver.grpc.TX_m2\374\003\n\014SystemServer\022\\\n" +
-      "\013init_Server\022&.notsystemserver.grpc.Init" +
-      "_Server_Args\032%.notsystemserver.grpc.Resp" +
-      "onse_status\022W\n\022Submit_Transaction\022\032.nots" +
-      "ystemserver.grpc.TX_m\032%.notsystemserver." +
-      "grpc.Response_status\022s\n\027submit_Transacti" +
-      "on_list\0221.notsystemserver.grpc.Submit_Tr" +
-      "ansaction_list_Req\032%.notsystemserver.grp" +
-      "c.Response_status\022O\n\nSend_Coins\022\032.notsys" +
-      "temserver.grpc.TX_m\032%.notsystemserver.gr" +
-      "pc.Response_status\022o\n\023Publish_Transactio" +
-      "n\0221.notsystemserver.grpc.Submit_Transact" +
-      "ion_list_Req\032%.notsystemserver.grpc.Resp" +
-      "onse_statusB\002P\001b\006proto3"
+      "pc\"\022\n\020Init_Server_Args\"&\n\tuint128_m\022\013\n\003l" +
+      "ow\030\001 \001(\004\022\014\n\004high\030\002 \001(\004\"G\n\004TR_m\0220\n\007addres" +
+      "s\030\001 \001(\0132\037.notsystemserver.grpc.uint128_m" +
+      "\022\r\n\005coins\030\002 \001(\004\"j\n\006UTxO_m\022.\n\005Tx_id\030\001 \001(\013" +
+      "2\037.notsystemserver.grpc.uint128_m\0220\n\007add" +
+      "ress\030\002 \001(\0132\037.notsystemserver.grpc.uint12" +
+      "8_m\"\237\001\n\004TX_m\022.\n\005Tx_id\030\001 \001(\0132\037.notsystems" +
+      "erver.grpc.uint128_m\022\021\n\ttimestamp\030\005 \001(\004\022" +
+      "+\n\005utxos\030\006 \003(\0132\034.notsystemserver.grpc.UT" +
+      "xO_m\022\'\n\003trs\030\007 \003(\0132\032.notsystemserver.grpc" +
+      ".TR_m\"\203\001\n\016Send_Coins_req\022/\n\006sender\030\001 \001(\013" +
+      "2\037.notsystemserver.grpc.uint128_m\0221\n\010rec" +
+      "eiver\030\002 \001(\0132\037.notsystemserver.grpc.uint1" +
+      "28_m\022\r\n\005coins\030\003 \001(\004\"#\n\017Response_status\022\020" +
+      "\n\010response\030\001 \001(\t\"8\n\tUTxO_list\022+\n\005uxtos\030\001" +
+      " \003(\0132\034.notsystemserver.grpc.UTxO_m\"D\n\020Tr" +
+      "ansaction_list\0220\n\014transactions\030\001 \003(\0132\032.n" +
+      "otsystemserver.grpc.TX_m2\213\005\n\014SystemServe" +
+      "r\022\\\n\013init_Server\022&.notsystemserver.grpc." +
+      "Init_Server_Args\032%.notsystemserver.grpc." +
+      "Response_status\022W\n\022Submit_Transaction\022\032." +
+      "notsystemserver.grpc.TX_m\032%.notsystemser" +
+      "ver.grpc.Response_status\022h\n\027submit_Trans" +
+      "action_list\022&.notsystemserver.grpc.Trans" +
+      "action_list\032%.notsystemserver.grpc.Respo" +
+      "nse_status\022O\n\nSend_Coins\022\032.notsystemserv" +
+      "er.grpc.TX_m\032%.notsystemserver.grpc.Resp" +
+      "onse_status\022d\n\023Publish_Transaction\022&.not" +
+      "systemserver.grpc.Transaction_list\032%.not" +
+      "systemserver.grpc.Response_status\022M\n\tget" +
+      "_utxos\022\037.notsystemserver.grpc.uint128_m\032" +
+      "\037.notsystemserver.grpc.UTxO_list\022T\n\020get_" +
+      "transactions\022\037.notsystemserver.grpc.uint" +
+      "128_m\032\037.notsystemserver.grpc.UTxO_listB\002" +
+      "P\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -89,36 +115,54 @@ public final class Systemserver {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_notsystemserver_grpc_Init_Server_Args_descriptor,
         new java.lang.String[] { });
-    internal_static_notsystemserver_grpc_TR_m_descriptor =
+    internal_static_notsystemserver_grpc_uint128_m_descriptor =
       getDescriptor().getMessageTypes().get(1);
+    internal_static_notsystemserver_grpc_uint128_m_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_notsystemserver_grpc_uint128_m_descriptor,
+        new java.lang.String[] { "Low", "High", });
+    internal_static_notsystemserver_grpc_TR_m_descriptor =
+      getDescriptor().getMessageTypes().get(2);
     internal_static_notsystemserver_grpc_TR_m_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_notsystemserver_grpc_TR_m_descriptor,
         new java.lang.String[] { "Address", "Coins", });
     internal_static_notsystemserver_grpc_UTxO_m_descriptor =
-      getDescriptor().getMessageTypes().get(2);
+      getDescriptor().getMessageTypes().get(3);
     internal_static_notsystemserver_grpc_UTxO_m_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_notsystemserver_grpc_UTxO_m_descriptor,
-        new java.lang.String[] { "TxId", "Tr", });
+        new java.lang.String[] { "TxId", "Address", });
     internal_static_notsystemserver_grpc_TX_m_descriptor =
-      getDescriptor().getMessageTypes().get(3);
+      getDescriptor().getMessageTypes().get(4);
     internal_static_notsystemserver_grpc_TX_m_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_notsystemserver_grpc_TX_m_descriptor,
-        new java.lang.String[] { "TxId", "Sender", "Receiver", "Amount", "Timestamp", "Utxos", "Trs", });
+        new java.lang.String[] { "TxId", "Timestamp", "Utxos", "Trs", });
+    internal_static_notsystemserver_grpc_Send_Coins_req_descriptor =
+      getDescriptor().getMessageTypes().get(5);
+    internal_static_notsystemserver_grpc_Send_Coins_req_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_notsystemserver_grpc_Send_Coins_req_descriptor,
+        new java.lang.String[] { "Sender", "Receiver", "Coins", });
     internal_static_notsystemserver_grpc_Response_status_descriptor =
-      getDescriptor().getMessageTypes().get(4);
+      getDescriptor().getMessageTypes().get(6);
     internal_static_notsystemserver_grpc_Response_status_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_notsystemserver_grpc_Response_status_descriptor,
         new java.lang.String[] { "Response", });
-    internal_static_notsystemserver_grpc_Submit_Transaction_list_Req_descriptor =
-      getDescriptor().getMessageTypes().get(5);
-    internal_static_notsystemserver_grpc_Submit_Transaction_list_Req_fieldAccessorTable = new
+    internal_static_notsystemserver_grpc_UTxO_list_descriptor =
+      getDescriptor().getMessageTypes().get(7);
+    internal_static_notsystemserver_grpc_UTxO_list_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_notsystemserver_grpc_Submit_Transaction_list_Req_descriptor,
-        new java.lang.String[] { "Requests", });
+        internal_static_notsystemserver_grpc_UTxO_list_descriptor,
+        new java.lang.String[] { "Uxtos", });
+    internal_static_notsystemserver_grpc_Transaction_list_descriptor =
+      getDescriptor().getMessageTypes().get(8);
+    internal_static_notsystemserver_grpc_Transaction_list_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_notsystemserver_grpc_Transaction_list_descriptor,
+        new java.lang.String[] { "Transactions", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)
