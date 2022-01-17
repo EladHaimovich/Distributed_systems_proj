@@ -77,7 +77,7 @@ test {
 jar {
 	manifest {
 		attributes(
-//				'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+				'Manifest-Version': '1.0',
 				'Main-Class': "CryptoSystem.SystemServer.ServerApp"
 		)
 	}

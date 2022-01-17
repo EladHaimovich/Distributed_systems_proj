@@ -33,12 +33,21 @@ public class ServerApp {
 
     public static void main(String[] args) throws InterruptedException {
 
-        try (Scanner scanner = new Scanner(new File("./parameters"))) {
-            shard = scanner.nextInt();
-            serverID = scanner.nextInt();
-            zkPort = scanner.nextInt();
-        } catch (Exception e) {//Catch exception if any
-            System.err.println("Error: " + e.getMessage());
+        if (args.length > 0) {
+            for (int i = 0; i < args.length; i++) {
+                System.out.println("arg "+ Integer.toString(i) + ": " +args[i]);
+            }
+            shard = Integer.parseInt(args[0]);
+            serverID = Integer.parseInt(args[1]);
+            zkPort = Integer.parseInt(args[2]);
+        } else {
+            try (Scanner scanner = new Scanner(new File("./parameters"))) {
+                shard = scanner.nextInt();
+                serverID = scanner.nextInt();
+                zkPort = scanner.nextInt();
+            } catch (Exception e) {//Catch exception if any
+                System.err.println("Error: " + e.getMessage());
+            }
         }
 
         gRPCPort = 30000 + 100 * shard + serverID;

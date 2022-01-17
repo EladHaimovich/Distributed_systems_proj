@@ -1,5 +1,6 @@
 package CryptoSystem.gRPCwrapper;
 
+import CryptoSystem.SystemServer.ServerApp;
 import CryptoSystem.SystemServer.Spring.RESTresponse;
 import CryptoSystem.ZooKeeper.ZKManager;
 import CryptoSystem.types.TR;
@@ -21,11 +22,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.DecimalFormat;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 
 public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
@@ -36,15 +34,18 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
     static private Integer zkPort;
     static private ZKManager myZK;
 
-    Map<uint128, List<UTxO>> spent_utxos;
-    Map<uint128, List<UTxO>> unspent_utxos;
+//    Map<uint128, List<UTxO>> spent_utxos;
+//    Map<uint128, List<UTxO>> unspent_utxos;
+
+    List<UTxO> spent_utxos;
+    List<UTxO> unspent_utxos;
 
     List<TX> txList;
 
 
 
 
-    static Semaphore atomic_vote_Mutex = new Semaphore(1);
+    static Semaphore atomic_transaction_Mutex = new Semaphore(1);
 
     /*
      * * * * * * * * * * * *
@@ -125,7 +126,7 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
                     Integer server_port = Integer.parseInt(myZK.getZNodeData("/Shards/" + shard_id.toString() + "/" + server,false));
                     String hostname = getHostName(shard_id, Integer.parseInt(server));
                     System.out.println("sending to " + hostname + ":" + server_port.toString());
-                    ManagedChannel channel = ManagedChannelBuilder.forAddress("hostname", server_port)
+                    ManagedChannel channel = ManagedChannelBuilder.forTarget(hostname + ":" + server_port.toString())
                             .usePlaintext()
                             .build();
                     SystemServerGrpc.SystemServerBlockingStub stub = SystemServerGrpc.newBlockingStub(channel);
@@ -157,21 +158,98 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
 
 
 
-        spent_utxos = new HashMap<uint128, List<UTxO>>();
-        unspent_utxos = new HashMap<uint128, List<UTxO>>();
+//        spent_utxos = new HashMap<uint128, List<UTxO>>();
+//        unspent_utxos = new HashMap<uint128, List<UTxO>>();
+        spent_utxos = new ArrayList<UTxO>();
+        unspent_utxos = new ArrayList<UTxO>();
         txList = new ArrayList<TX>();
 
         if (shard_id == 0) {
-            uint128 zero = new uint128(0,0);
-            List<UTxO> gen_list = new ArrayList<UTxO>();
-            gen_list.add(UTxO.genUTxO());
-            unspent_utxos.put(zero, gen_list);
+//            uint128 zero = new uint128(0,0);
+//            List<UTxO> gen_list = new ArrayList<UTxO>();
+//            gen_list.add(UTxO.genUTxO());
+//            unspent_utxos.put(zero, gen_list);
+            unspent_utxos.add(UTxO.genUTxO());
             txList.add(TX.gen_TX());
         }
         Response_status response = Response_status.newBuilder().setResponse("OK").build();
         responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
+
+    @Override
+    public void submitTransaction(notsystemserver.grpc.TX_m request,
+                                  io.grpc.stub.StreamObserver<notsystemserver.grpc.Response_status> responseObserver) {
+
+        atomic_transaction_Mutex.acquireUninterruptibly();
+        boolean transaction_failed = false;
+        TX transaction = new TX(request);
+        uint128 sender = transaction.getUtxos().get(0).getAddress();
+        assert (sender.hashCode()%ServerApp.NUM_OF_SHARDS == shard_id);
+        List<UTxO> processed_utxos = new ArrayList<UTxO>();
+        String response_string = null;
+        for (UTxO utxo: transaction.getUtxos()) {
+            if (processed_utxos.contains(utxo)) {
+                response_string = "UTxO " +utxo.toString() + " appeared twice in transaction: " + transaction.getTx_id();
+                transaction_failed = true;
+                break;
+            } else if (spent_utxos.contains(utxo)) {
+                response_string = "UTxO " + utxo.toString() + " was already spent";
+                transaction_failed = true;
+                break;
+            } else if (!utxo.getAddress().equals(sender)) {
+                response_string = "UTxO " + utxo.toString() + " doesn't belong to sender " + sender.toString();
+                transaction_failed = true;
+                break;
+            }
+            processed_utxos.add(utxo);
+        }
+        List<uint128> prev_transtactions_ids = processed_utxos.stream()
+                        .map(UTxO::getTx_id)
+                        .collect(Collectors.toList());
+
+        List<TX> prev_transactions = txList.stream()
+                        .filter(tx -> prev_transtactions_ids.contains(tx.getTx_id()))
+                        .collect(Collectors.toList());
+
+        long utxo_sum = prev_transactions.stream()
+                        .map(x -> x.getTrs().stream()
+                                .filter(tr -> tr.getAddress().equals(sender))
+                                .map(TR::getAmount)
+                                .reduce(0L, Long::sum))
+                        .reduce(0L, Long::sum);
+
+        long trs_sum = transaction.getTrs().stream().map(TR::getAmount).reduce(0L, Long::sum);
+        if (!transaction_failed && utxo_sum != trs_sum) {
+            response_string = "value of UTxOs doesn't match value of TRs";
+            transaction_failed = true;
+        }
+        if(response_string == null) {
+            /* update database */
+            spent_utxos.addAll(transaction.getUtxos());
+            unspent_utxos.removeAll(transaction.getUtxos());
+            List<UTxO> shards_utxos = transaction.getTrs().stream()
+                        .filter(tr -> shard_id.equals(tr.getAddress().hashCode()%ServerApp.NUM_OF_SHARDS))
+                        .map(tr -> new UTxO(transaction.getTx_id(), tr.getAddress())).collect(Collectors.toList());
+            unspent_utxos.addAll(shards_utxos);
+            txList.add(transaction);
+
+            /* broadcast to all the servers */
+
+            Transaction_list request_list = Transaction_list.newBuilder().addTransactions(request).build();
+            send_publishTransactions(request_list);
+            response_string = "OK";
+        }
+        atomic_transaction_Mutex.release();
+        Response_status response = Response_status.newBuilder().setResponse(response_string).build();
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+        return;
+
+    }
+
+
+
 
 //    @Override
 //    public void submitTransactionList(notsystemserver.grpc.Transaction_list request,
@@ -246,78 +324,43 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
     @Override
     public void publishTransaction(notsystemserver.grpc.Transaction_list request,
                                    io.grpc.stub.StreamObserver<notsystemserver.grpc.Response_status> responseObserver) {
-//        boolean republish = false;
-//        List<TX_m> requestsList = request.getTransactionsList();
-//        for (TX_m req: requestsList) {
-//            TX tx = new TX(req);
-//            if (txList.contains(tx)) {
-//                Response_status response = Response_status.newBuilder().setResponse("OK").build();
-//                responseObserver.onNext(response);
-//                responseObserver.onCompleted();
-//                return;
-//            }
-//            txList.add(tx);
-//            if (Arrays.hashCode(tx.getSender()) == shard_id) {
-//                assert (tx.isProcessed());
-//                // remove old utxo from unspent list and add to spent list
-//                List<UTxO> current_spent_tx = tx.getUtxos();
-//                for (UTxO utxo:current_spent_tx) {
-//                    List<UTxO> current_spent;
-//                    if (spent_utxos.containsKey(tx.getSender())) {
-//                        current_spent = spent_utxos.get(tx.getSender());
-//                        assert (!current_spent.contains(utxo));
-//                    } else
-//                        current_spent = new ArrayList<>();
-//                    current_spent.add(utxo);
-//                    spent_utxos.put(tx.getSender(),current_spent);
-//
-//                    List<UTxO> current_unspent;
-//                    if (unspent_utxos.containsKey(tx.getSender())) {
-//                        current_unspent = unspent_utxos.get(tx.getSender());
-//                    } else
-//                        current_unspent = new ArrayList<>();
-//                    current_unspent.remove(utxo);
-//                    unspent_utxos.put(tx.getSender(),current_unspent);
-//                }
-//
-//                // add new utxo to unspentlist
-//                UTxO uTxO_sender = new UTxO(tx, tx.getSender());
-//                if (uTxO_sender.getAmount() > 0) {
-//                    List<UTxO> current_unspent;
-//                    if (unspent_utxos.containsKey(tx.getSender()))
-//                        current_unspent = unspent_utxos.get(tx.getSender());
-//                    else
-//                        current_unspent = new ArrayList<UTxO>();
-//                    if (current_unspent.contains(uTxO_sender))
-//                        System.out.println("utxo already exists: tx_id: " + tx.getTx_id().toString() + " , receiver:" + Arrays.toString(tx.getSender()));
-//                    current_unspent.add(uTxO_sender);
-//                    unspent_utxos.put(tx.getSender(), current_unspent);
-//                }
-//            }
-//            if (Arrays.hashCode(tx.getReceiver()) == shard_id) {
-//                assert (tx.isProcessed());
-//                // add new utxo to unspentlist
-//                UTxO uTxO_receiver = new UTxO(tx, tx.getReceiver());
-//                if (uTxO_receiver.getAmount() > 0) {
-//                    List<UTxO> current_unspent;
-//                    if (unspent_utxos.containsKey(tx.getReceiver()))
-//                        current_unspent = unspent_utxos.get(tx.getReceiver());
-//                    else
-//                        current_unspent = new ArrayList<UTxO>();
-//                    if (current_unspent.contains(uTxO_receiver))
-//                        System.out.println("utxo already exists: tx_id" + tx.getTx_id().toString() + " , receiver:" + Arrays.toString(tx.getReceiver()));
-//                    current_unspent.add(uTxO_receiver);
-//                    unspent_utxos.put(tx.getReceiver(), current_unspent);
-//                }
-//            }
-//
-//            if (Arrays.hashCode(tx.getSender()) == shard_id)
-//                republish =  true;
-//        }
-//
-//
-//        if (republish)
-//            send_publishTransaction(request);
+        String response_string = null;
+
+        List<TX> transactions = request.getTransactionsList().stream().map(TX::new).collect(Collectors.toList());
+        List<TX> relevant_transactions = new ArrayList<TX>();
+        for (TX tx:transactions) {
+            List<TR> trs = tx.getTrs().stream()
+                        .filter(tr -> shard_id.equals(tr.getAddress().hashCode()%ServerApp.NUM_OF_SHARDS))
+                        .collect(Collectors.toList());
+            if (!trs.isEmpty()) {
+                relevant_transactions.add(tx);
+            }
+        }
+
+        /* if the first transaction is new (all other should be as well), add them to database and broadcast to other nodes */
+        if (!txList.contains(relevant_transactions.get(0))) {
+            atomic_transaction_Mutex.acquireUninterruptibly();
+            for (TX tx : relevant_transactions) {
+                List<TR> trs = tx.getTrs().stream()
+                        .filter(tr -> shard_id.equals(tr.getAddress().hashCode() % ServerApp.NUM_OF_SHARDS))
+                        .collect(Collectors.toList());
+                List<UTxO> relevant_utxos = trs.stream().map(tr -> new UTxO(tx.getTx_id(), tr.getAddress())).collect(Collectors.toList());
+                assert (relevant_utxos.size() != 0);
+                unspent_utxos.addAll(relevant_utxos);
+                txList.add(tx);
+            }
+            atomic_transaction_Mutex.release();
+            Response_status response = Response_status.newBuilder().setResponse("OK").build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+            send_publishTransactions(request);
+            return;
+        }
+        Response_status response = Response_status.newBuilder().setResponse("OK").build();
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+        return;
     }
 
 
@@ -327,27 +370,56 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
     * * * * * * * * * * *
     */
 
-    public void send_publishTransaction(Transaction_list request) {
-        System.out.println("Entered send_publishTransaction " + shard_id.toString() + " " + server_id.toString()
-                            + "\nTX_id:" + request.getTransactions(0).getTxId());
+    public void send_publishTransactions(notsystemserver.grpc.Transaction_list request) {
+
+        List<TX> transactions = request.getTransactionsList().stream().map(TX::new).collect(Collectors.toList());
+        System.out.println("Entered send_publishTransactions " + shard_id.toString() + " " + server_id.toString()
+                + "\nTX_id:" + transactions.get(0).getTx_id());
+        Set<Integer> shards = new HashSet<Integer>();
+        for (TX tx: transactions) {
+            shards.addAll(tx.getTrs().stream().map(tr -> tr.getAddress().hashCode()%ServerApp.NUM_OF_SHARDS).collect(Collectors.toList()));
+        }
+
         try {
-            List<String> shards = myZK.getChildren("/Shards");
-            for (String shard:shards) {
+            List<ManagedChannel> channels = new ArrayList<ManagedChannel>();
+            List<Future<Response_status>> futures = new ArrayList<Future<Response_status>>();
+
+            for (Integer shard:shards) {
                 List<String> servers = myZK.getChildren("/Shards/"+shard);
                 for (String server:servers) {
-                    if (server.equals(server_id.toString()) && shard.equals(shard_id.toString()))
+                    if (server.equals(server_id.toString()) && shard.equals(shard_id))
                         continue;
                     System.out.println("in send_initServer: sending init to shard: " + shard);
-                    Integer server_port = getServerPort(Integer.parseInt(shard), Integer.parseInt(server));
-                    String hostname = getHostName(shard_id, Integer.parseInt(server));
+                    Integer server_port = getServerPort(shard, Integer.parseInt(server));
+                    String hostname = getHostName(shard, Integer.parseInt(server));
                     System.out.println("sending to " + hostname + ":" + server_port.toString());
-                    ManagedChannel channel = ManagedChannelBuilder.forAddress(hostname, server_port)
+
+
+                    /* send to all servers */
+                    ManagedChannel channel = ManagedChannelBuilder.forTarget(hostname + ":" + server_port.toString())
                             .usePlaintext()
                             .build();
-                    SystemServerGrpc.SystemServerBlockingStub stub = SystemServerGrpc.newBlockingStub(channel);
-                    stub.publishTransaction(request);
-                    channel.shutdown();
+                    SystemServerGrpc.SystemServerFutureStub stub = SystemServerGrpc.newFutureStub(channel);
+                    List<TX_m> transaction_messages = transactions.stream().map(TX::to_grpc).collect(Collectors.toList());
+                    Future<Response_status> future = stub.publishTransaction(request);
+                    futures.add(future);
+                    channels.add(channel);
+
                 }
+            }
+
+            /* wait any response */
+            int number_of_responses;
+            do {
+                number_of_responses = 0;
+                for (Future<Response_status> future: futures) {
+                    if (future.isDone())
+                        number_of_responses++;
+                }
+            } while (number_of_responses != 0);
+
+            for (ManagedChannel channel: channels) {
+                channel.shutdown();
             }
 
         } catch (InterruptedException | KeeperException | NullPointerException e) {
