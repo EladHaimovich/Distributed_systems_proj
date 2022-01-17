@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class RESTcontroller {
 
+    SystemServerImpl grpc_server = new SystemServerImpl();
+
     @PostMapping(value = "/TX")
     public RESTresponse TX(@RequestBody TX tx_request) {
         System.out.println("Entered Rest: init");
-        SystemServerImpl grpc_server = new SystemServerImpl();
+
         Integer port = grpc_server.getGrpcPort();
 
 
@@ -26,7 +28,7 @@ public class RESTcontroller {
         SystemServerGrpc.SystemServerBlockingStub stub = SystemServerGrpc.newBlockingStub(channel);
 
 
-        TX_m tx_m = tx_request.to_tx_m();
+        TX_m tx_m = tx_request.to_grpc();
 
         Response_status res_grpc = stub.submitTransaction(tx_m);
 
@@ -42,7 +44,7 @@ public class RESTcontroller {
     public RESTresponse init() {
         System.out.println("Entered Rest: init");
         RESTresponse res;
-        if (SystemServerImpl.send_initServer())
+        if (grpc_server.send_initServer())
             res = new RESTresponse("Init OK");
         else
             res = new RESTresponse("Init Failed");

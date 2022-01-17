@@ -23,11 +23,9 @@ import java.util.concurrent.TimeUnit;
 public class ServerApp {
     public static final Integer NUM_OF_SHARDS = 2;
 
-
-
     private static Integer zkPort = 2181;
-    private static final Integer gRPCPort = 30000;
-    private static final Integer restPort = 40000;
+    private static Integer gRPCPort;
+    private static  Integer restPort;
     private static Integer serverID;
     private static Integer shard;
     private static SystemServerImpl grpc_service;
@@ -42,6 +40,10 @@ public class ServerApp {
         } catch (Exception e) {//Catch exception if any
             System.err.println("Error: " + e.getMessage());
         }
+
+        gRPCPort = 30000 + 100 * shard + serverID;
+        restPort = 40000 + 100 * shard + serverID;
+
 
         assert (Integer.compareUnsigned(NUM_OF_SHARDS, shard) > 0);
 
@@ -97,10 +99,17 @@ public class ServerApp {
                 System.err.println("ERROR ERROR ERROR!");
                 assert false;
             }
-        } catch (IOException e) {
-            System.err.println("*** IOException during myZK init ***\n" + e.getMessage());
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+
+            try{
+                System.err.println("*** running myZK.create_base_znodes ***");
+                myZK.create_base_znodes();
+            } catch (KeeperException e)  {
+                System.err.println("*** myZK.create_base_znodes failed ***\n" + e.getMessage());
+                System.err.println("ERROR ERROR ERROR!");
+                assert false;
+            }
+
+        } catch (IOException | InterruptedException | KeeperException e) {
             System.err.println("*** IOException during myZK init ***\n" + e.getMessage());
             e.printStackTrace();
         }
@@ -124,7 +133,7 @@ public class ServerApp {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("Server started!");
+        System.out.println("Server started! listening on port " + port);
         try {
             server.awaitTermination();
         } catch (InterruptedException e) {

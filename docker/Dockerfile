@@ -25,7 +25,7 @@ WORKDIR /server
 
 RUN echo "$ShardID $ServerID $ZookeeperPort" > ./parameters && cat ./parameters
 
-EXPOSE 30000 40000
+EXPOSE 30000 30100 40000 40100
 
 #RUN ls ./build/libs
 

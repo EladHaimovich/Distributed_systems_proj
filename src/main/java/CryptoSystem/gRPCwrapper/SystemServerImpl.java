@@ -19,6 +19,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
@@ -39,6 +40,8 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
     Map<uint128, List<UTxO>> unspent_utxos;
 
     List<TX> txList;
+
+
 
 
     static Semaphore atomic_vote_Mutex = new Semaphore(1);
@@ -73,12 +76,13 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
         return serverGrpcPort;
     }
 
-    private static Integer getLeaderPort(String shard) {
+    private static Integer getLeader(Integer shard) {
         try {
             List<String> servers = myZK.getChildren("/Shards/" + shard);
             System.out.println("[getLeaderPort]: Shard: "+ shard + " ,List: " + servers.toString());
             servers.sort(Comparator.naturalOrder());
-            return getServerPort(shard, servers.get(0));
+            Integer server = Integer.parseInt(servers.get(0));
+            return server;
 
         } catch (InterruptedException | KeeperException | NullPointerException e) {
             e.printStackTrace();
@@ -86,9 +90,14 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
         }
     }
 
-    private static Integer getServerPort(String shard, String server) {
+    private static String getHostName(Integer shard, Integer server) {
+        return "server" + new DecimalFormat("00").format(shard).toString() +
+                new DecimalFormat("00").format(server).toString() + ".local";
+    }
+
+    private static Integer getServerPort(Integer shard, Integer server) {
         try {
-            Integer server_port = Integer.parseInt(myZK.getZNodeData("/Shards/" + shard + "/" + server,false));
+            Integer server_port = Integer.parseInt(myZK.getZNodeData("/Shards/" + shard.toString() + "/" + server.toString(),false));
             return server_port;
 
         } catch (InterruptedException | KeeperException | NullPointerException | UnsupportedEncodingException e) {
@@ -96,22 +105,6 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
             return -1;
         }
     }
-
-
-//    private byte[] hash128bit(String input) throws NoSuchAlgorithmException {
-//        String hash = "35454B055CC325EA1AF2126E27707052";
-//        String password = "ILoveJava";
-//
-//        MessageDigest md = MessageDigest.getInstance("MD5");
-//        md.update(input.getBytes());
-//        byte[] digest = md.digest();
-//
-//        byte[] res = new byte[8];
-//        for (int i = 0; i < 8; i++)
-//            res[i]=digest[i];
-//        return res;
-//    }
-
 
     /*
      * * * * * * * * * * *
@@ -124,13 +117,15 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
                            StreamObserver<Response_status> responseObserver) {
         System.out.println("Entered init server " + shard_id.toString() + " " + server_id.toString());
 
-        if (getLeaderPort(shard_id.toString()) == serverGrpcPort) {
+        if (getLeader(shard_id) == server_id) {
             try {
                 List<String> servers = myZK.getChildren("/Shards/" + shard_id.toString());
                 servers.remove(server_id.toString());
                 for (String server:servers) {
                     Integer server_port = Integer.parseInt(myZK.getZNodeData("/Shards/" + shard_id.toString() + "/" + server,false));
-                    ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", server_port)
+                    String hostname = getHostName(shard_id, Integer.parseInt(server));
+                    System.out.println("sending to " + hostname + ":" + server_port.toString());
+                    ManagedChannel channel = ManagedChannelBuilder.forAddress("hostname", server_port)
                             .usePlaintext()
                             .build();
                     SystemServerGrpc.SystemServerBlockingStub stub = SystemServerGrpc.newBlockingStub(channel);
@@ -151,21 +146,27 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
             }
         }
 
+        for (int i = 0; i < 10; i++) {
+            try {
+                System.out.println("i = " +Integer.toString(i) + ", " + Long.toUnsignedString(myZK.generate_timestamp()));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+
+
+
         spent_utxos = new HashMap<uint128, List<UTxO>>();
         unspent_utxos = new HashMap<uint128, List<UTxO>>();
         txList = new ArrayList<TX>();
 
         if (shard_id == 0) {
             uint128 zero = new uint128(0,0);
-            TR gen_tr = new TR(zero, -1);
-            List<TR> tr_list = new ArrayList<TR>();
-            tr_list.add(gen_tr);
-            TX gen_tx = new TX(zero, 0,null, tr_list);
-
-            UTxO gen_utxo = new UTxO(zero, zero);
             List<UTxO> gen_list = new ArrayList<UTxO>();
-            gen_list.add(gen_utxo);
-            unspent_utxos.put(zero,gen_list);
+            gen_list.add(UTxO.genUTxO());
+            unspent_utxos.put(zero, gen_list);
+            txList.add(TX.gen_TX());
         }
         Response_status response = Response_status.newBuilder().setResponse("OK").build();
         responseObserver.onNext(response);
@@ -243,80 +244,80 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
 
 
     @Override
-    public void publishTransaction(notsystemserver.grpc.Submit_Transaction_list_Req request,
+    public void publishTransaction(notsystemserver.grpc.Transaction_list request,
                                    io.grpc.stub.StreamObserver<notsystemserver.grpc.Response_status> responseObserver) {
-        boolean republish = false;
-        List<TX_m> requestsList = request.getRequestsList();
-        for (TX_m req: requestsList) {
-            TX tx = new TX(req);
-            if (txList.contains(tx)) {
-                Response_status response = Response_status.newBuilder().setResponse("OK").build();
-                responseObserver.onNext(response);
-                responseObserver.onCompleted();
-                return;
-            }
-            txList.add(tx);
-            if (Arrays.hashCode(tx.getSender()) == shard_id) {
-                assert (tx.isProcessed());
-                // remove old utxo from unspent list and add to spent list
-                List<UTxO> current_spent_tx = tx.getUtxos();
-                for (UTxO utxo:current_spent_tx) {
-                    List<UTxO> current_spent;
-                    if (spent_utxos.containsKey(tx.getSender())) {
-                        current_spent = spent_utxos.get(tx.getSender());
-                        assert (!current_spent.contains(utxo));
-                    } else
-                        current_spent = new ArrayList<>();
-                    current_spent.add(utxo);
-                    spent_utxos.put(tx.getSender(),current_spent);
-
-                    List<UTxO> current_unspent;
-                    if (unspent_utxos.containsKey(tx.getSender())) {
-                        current_unspent = unspent_utxos.get(tx.getSender());
-                    } else
-                        current_unspent = new ArrayList<>();
-                    current_unspent.remove(utxo);
-                    unspent_utxos.put(tx.getSender(),current_unspent);
-                }
-
-                // add new utxo to unspentlist
-                UTxO uTxO_sender = new UTxO(tx, tx.getSender());
-                if (uTxO_sender.getAmount() > 0) {
-                    List<UTxO> current_unspent;
-                    if (unspent_utxos.containsKey(tx.getSender()))
-                        current_unspent = unspent_utxos.get(tx.getSender());
-                    else
-                        current_unspent = new ArrayList<UTxO>();
-                    if (current_unspent.contains(uTxO_sender))
-                        System.out.println("utxo already exists: tx_id" + Arrays.toString(tx.getTx_id()) + " , receiver:" + Arrays.toString(tx.getSender()));
-                    current_unspent.add(uTxO_sender);
-                    unspent_utxos.put(tx.getSender(), current_unspent);
-                }
-            }
-            if (Arrays.hashCode(tx.getReceiver()) == shard_id) {
-                assert (tx.isProcessed());
-                // add new utxo to unspentlist
-                UTxO uTxO_receiver = new UTxO(tx, tx.getReceiver());
-                if (uTxO_receiver.getAmount() > 0) {
-                    List<UTxO> current_unspent;
-                    if (unspent_utxos.containsKey(tx.getReceiver()))
-                        current_unspent = unspent_utxos.get(tx.getReceiver());
-                    else
-                        current_unspent = new ArrayList<UTxO>();
-                    if (current_unspent.contains(uTxO_receiver))
-                        System.out.println("utxo already exists: tx_id" + Arrays.toString(tx.getTx_id()) + " , receiver:" + Arrays.toString(tx.getReceiver()));
-                    current_unspent.add(uTxO_receiver);
-                    unspent_utxos.put(tx.getReceiver(), current_unspent);
-                }
-            }
-
-            if (Arrays.hashCode(tx.getSender()) == shard_id)
-                republish =  true;
-        }
-
-
-        if (republish)
-            send_publishTransaction(request);
+//        boolean republish = false;
+//        List<TX_m> requestsList = request.getTransactionsList();
+//        for (TX_m req: requestsList) {
+//            TX tx = new TX(req);
+//            if (txList.contains(tx)) {
+//                Response_status response = Response_status.newBuilder().setResponse("OK").build();
+//                responseObserver.onNext(response);
+//                responseObserver.onCompleted();
+//                return;
+//            }
+//            txList.add(tx);
+//            if (Arrays.hashCode(tx.getSender()) == shard_id) {
+//                assert (tx.isProcessed());
+//                // remove old utxo from unspent list and add to spent list
+//                List<UTxO> current_spent_tx = tx.getUtxos();
+//                for (UTxO utxo:current_spent_tx) {
+//                    List<UTxO> current_spent;
+//                    if (spent_utxos.containsKey(tx.getSender())) {
+//                        current_spent = spent_utxos.get(tx.getSender());
+//                        assert (!current_spent.contains(utxo));
+//                    } else
+//                        current_spent = new ArrayList<>();
+//                    current_spent.add(utxo);
+//                    spent_utxos.put(tx.getSender(),current_spent);
+//
+//                    List<UTxO> current_unspent;
+//                    if (unspent_utxos.containsKey(tx.getSender())) {
+//                        current_unspent = unspent_utxos.get(tx.getSender());
+//                    } else
+//                        current_unspent = new ArrayList<>();
+//                    current_unspent.remove(utxo);
+//                    unspent_utxos.put(tx.getSender(),current_unspent);
+//                }
+//
+//                // add new utxo to unspentlist
+//                UTxO uTxO_sender = new UTxO(tx, tx.getSender());
+//                if (uTxO_sender.getAmount() > 0) {
+//                    List<UTxO> current_unspent;
+//                    if (unspent_utxos.containsKey(tx.getSender()))
+//                        current_unspent = unspent_utxos.get(tx.getSender());
+//                    else
+//                        current_unspent = new ArrayList<UTxO>();
+//                    if (current_unspent.contains(uTxO_sender))
+//                        System.out.println("utxo already exists: tx_id: " + tx.getTx_id().toString() + " , receiver:" + Arrays.toString(tx.getSender()));
+//                    current_unspent.add(uTxO_sender);
+//                    unspent_utxos.put(tx.getSender(), current_unspent);
+//                }
+//            }
+//            if (Arrays.hashCode(tx.getReceiver()) == shard_id) {
+//                assert (tx.isProcessed());
+//                // add new utxo to unspentlist
+//                UTxO uTxO_receiver = new UTxO(tx, tx.getReceiver());
+//                if (uTxO_receiver.getAmount() > 0) {
+//                    List<UTxO> current_unspent;
+//                    if (unspent_utxos.containsKey(tx.getReceiver()))
+//                        current_unspent = unspent_utxos.get(tx.getReceiver());
+//                    else
+//                        current_unspent = new ArrayList<UTxO>();
+//                    if (current_unspent.contains(uTxO_receiver))
+//                        System.out.println("utxo already exists: tx_id" + tx.getTx_id().toString() + " , receiver:" + Arrays.toString(tx.getReceiver()));
+//                    current_unspent.add(uTxO_receiver);
+//                    unspent_utxos.put(tx.getReceiver(), current_unspent);
+//                }
+//            }
+//
+//            if (Arrays.hashCode(tx.getSender()) == shard_id)
+//                republish =  true;
+//        }
+//
+//
+//        if (republish)
+//            send_publishTransaction(request);
     }
 
 
@@ -326,9 +327,9 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
     * * * * * * * * * * *
     */
 
-    public void send_publishTransaction(Submit_Transaction_list_Req request) {
+    public void send_publishTransaction(Transaction_list request) {
         System.out.println("Entered send_publishTransaction " + shard_id.toString() + " " + server_id.toString()
-                            + "\nTX_id:" + request.getRequests(0).getTxId().toString());
+                            + "\nTX_id:" + request.getTransactions(0).getTxId());
         try {
             List<String> shards = myZK.getChildren("/Shards");
             for (String shard:shards) {
@@ -337,8 +338,10 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
                     if (server.equals(server_id.toString()) && shard.equals(shard_id.toString()))
                         continue;
                     System.out.println("in send_initServer: sending init to shard: " + shard);
-                    Integer server_port = getServerPort(shard, server);
-                    ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", server_port)
+                    Integer server_port = getServerPort(Integer.parseInt(shard), Integer.parseInt(server));
+                    String hostname = getHostName(shard_id, Integer.parseInt(server));
+                    System.out.println("sending to " + hostname + ":" + server_port.toString());
+                    ManagedChannel channel = ManagedChannelBuilder.forAddress(hostname, server_port)
                             .usePlaintext()
                             .build();
                     SystemServerGrpc.SystemServerBlockingStub stub = SystemServerGrpc.newBlockingStub(channel);
@@ -355,30 +358,82 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
 
     }
 
-    public static boolean send_initServer() {
+    public boolean send_initServer() {
         System.out.println("Entered send_initServer " + shard_id.toString() + " " + server_id.toString());
         try {
             List<String> shards = myZK.getChildren("/Shards");
+//            shards.remove(shard_id.toString());
             for (String shard:shards) {
-                System.out.println("in send_initServer: sending init to shard: " + shard);
-                Integer server_port = getLeaderPort(shard);
-                ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", server_port)
-                        .usePlaintext()
-                        .build();
-                SystemServerGrpc.SystemServerBlockingStub stub = SystemServerGrpc.newBlockingStub(channel);
-                Init_Server_Args args = Init_Server_Args.newBuilder().build();
-                Response_status res_grpc = stub.initServer(args);
-                if (!(res_grpc.getResponse().equals("OK"))) {
-                    channel.shutdown();
+                Integer server  = getLeader(Integer.parseInt(shard));
+                Integer server_port = getServerPort(Integer.parseInt(shard), getLeader(Integer.parseInt(shard)));
+                System.out.println("in send_initServer: sending init to shard: " + shard + ", server: " + server.toString() +  ", port: " + server_port.toString());
+                ManagedChannel channel;
+                try {
+                    String hostname = getHostName(Integer.parseInt(shard), server);
+                    System.out.println("sending to " + hostname + ":" + server_port.toString());
+
+                    channel = ManagedChannelBuilder.forTarget(hostname + ":" + server_port.toString())
+                            .usePlaintext()
+                            .build();
+//                    channel = ManagedChannelBuilder.forAddress(hostname, server_port)
+//                            .usePlaintext()
+//                            .build();
+                } catch (Exception e) {
+                    System.out.println("[send_initServer] got wierd exception when creating channel " + e.getMessage());
+//                    e.printStackTrace();
                     return false;
                 }
-                channel.shutdown();
+                SystemServerGrpc.SystemServerBlockingStub stub;
+                try {
+                    stub = SystemServerGrpc.newBlockingStub(channel);
+                } catch (Exception e) {
+                    System.out.println("[send_initServer] got wierd exception when creating stub " + e.getMessage());
+                    System.out.println(e.getCause().getMessage());
+                    e.getCause().printStackTrace();
+//                    e.printStackTrace();
+                    return false;
+                }
+
+                Init_Server_Args args = Init_Server_Args.newBuilder().build();
+
+                Response_status res_grpc;
+                try {
+                    res_grpc = stub.initServer(args);
+                } catch (Exception e) {
+                    System.out.println("[send_initServer] got wierd exception when creating stub " + e.getMessage());
+//                    e.printStackTrace();
+                    return false;
+                }
+
+                try {
+                    if (!(res_grpc.getResponse().equals("OK"))) {
+                        channel.shutdown();
+                        return false;
+                    }
+                    channel.shutdown();
+                }catch (Exception e) {
+                    System.out.println("[send_initServer] got wierd exception when shutting down channel " + e.getMessage());
+                    e.printStackTrace();
+                    return false;
+
+                }
+
             }
 
         } catch (InterruptedException | KeeperException | NullPointerException e) {
+            System.out.println("[send_initServer] got exception " + e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
+
             e.printStackTrace();
             return false;
+        } catch (Exception e) {
+            System.out.println("[send_initServer] got wierd exception " + e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
+
+            e.printStackTrace();
+            return false;
+
         }
+
+
         return true;
     }
 

@@ -61,4 +61,9 @@ public class UTxO {
     public int hashCode() {
         return Objects.hash(getTx_id(), getAddress());
     }
+
+    public static UTxO genUTxO() {
+        uint128 zero = new uint128(0,0);
+        return new UTxO(zero, zero);
+    }
 }

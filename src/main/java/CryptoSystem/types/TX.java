@@ -82,4 +82,13 @@ public class TX {
     public int hashCode() {
         return Objects.hash(getTx_id());
     }
+
+    public static TX gen_TX() {
+        uint128 zero = new uint128(0,0);
+        TR gen_tr = new TR(zero, -1);
+        List<TR> tr_list = new ArrayList<TR>();
+        tr_list.add(gen_tr);
+        return new TX(zero, 0,new ArrayList<>(), tr_list);
+    }
+
 }

@@ -63,6 +63,7 @@ services:
       AUTO_CONNECT_CONNECTION_ID: ZKLOCAL1
 
   server0000:
+    hostname: server0000.local
     build:
       context: .
       dockerfile: docker/Dockerfile
@@ -73,7 +74,6 @@ services:
     networks:
       - zookeeper
     ports:
-#      - "20000:20000" # ZooKeeper
       - "30000:30000" # gRPC
       - "40000:40000" # Rest
 
@@ -83,23 +83,26 @@ services:
 #      args:
 #        - ShardID=0
 #        - ServerID=1
-#        - ZookeeperPort=20001
+#        - ZookeeperPort=2181
 #    ports:
 #      - "20001:20001" # ZooKeeper
 #      - "30001:30000" # gRPC
 #      - "40001:40000" # Rest
 #
-#  server0100:
-#    build:
-#      context: .
-#      args:
-#        - ShardID=1
-#        - ServerID=0
-#        - ZookeeperPort=20100
-#    ports:
-#      - "20100:20100" # ZooKeeper
-#      - "30100:30000" # gRPC
-#      - "40100:40000" # Rest
+  server0100:
+    hostname: server0100.local
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        - ShardID=1
+        - ServerID=0
+        - ZookeeperPort=2181
+    networks:
+      - zookeeper
+    ports:
+      - "30100:30100" # gRPC
+      - "40100:40100" # Rest
 #
 #  server0101:
 #    build:
@@ -107,7 +110,7 @@ services:
 #      args:
 #        - ShardID=1
 #        - ServerID=1
-#        - ZookeeperPort=20101
+#        - ZookeeperPort=2181
 #    ports:
 #      - "20101:20101" # ZooKeeper
 #      - "30101:30000" # gRPC

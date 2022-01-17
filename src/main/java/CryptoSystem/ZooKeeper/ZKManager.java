@@ -16,4 +16,6 @@ public interface ZKManager {
     public List<String> getChildren(String path) throws KeeperException, InterruptedException;
     public String getData(String path) throws KeeperException, InterruptedException;
     public Stat getStat(String path) throws KeeperException, InterruptedException;
+    public void create_base_znodes() throws InterruptedException, KeeperException;
+    public long generate_timestamp() throws InterruptedException, KeeperException;
 }
