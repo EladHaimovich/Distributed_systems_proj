@@ -1,5 +1,6 @@
 package CryptoSystem.ZooKeeper;
 
+import CryptoSystem.types.uint128;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.*;
 
@@ -18,4 +19,5 @@ public interface ZKManager {
     public Stat getStat(String path) throws KeeperException, InterruptedException;
     public void create_base_znodes() throws InterruptedException, KeeperException;
     public long generate_timestamp() throws InterruptedException, KeeperException;
+    public uint128 generate_uint128() throws InterruptedException, KeeperException;
 }

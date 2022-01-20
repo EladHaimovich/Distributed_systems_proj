@@ -45,6 +45,6 @@ public class uint128 {
 
     @Override
     public String toString() {
-        return Long.toUnsignedString(high) + Long.toUnsignedString(low) ;
+        return String.format("0x%016X",high) + String.format("%016X",low) ;
     }
 }

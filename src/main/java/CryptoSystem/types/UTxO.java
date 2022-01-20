@@ -66,4 +66,12 @@ public class UTxO {
         uint128 zero = new uint128(0,0);
         return new UTxO(zero, zero);
     }
+
+    @Override
+    public String toString() {
+        return "UTxO{" +
+                "tx_id=" + tx_id +
+                ", address=" + address +
+                '}';
+    }
 }

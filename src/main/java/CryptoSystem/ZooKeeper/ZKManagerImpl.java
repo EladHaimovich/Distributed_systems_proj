@@ -22,6 +22,7 @@ public class ZKManagerImpl implements ZKManager {
     private static final String UINT128_BASE_PATH = "/uint128";
     private static final String UINT128_HIGH_PATH = "/uint128/high";
     private static final String UINT128_LOW_PATH = "/uint128/low";
+    private static final String UINT128_LOCK_PATH = "/uint128/lock";
 
     public ZKManagerImpl(Integer port) throws IOException, InterruptedException, KeeperException {
         initialize(port);
@@ -32,7 +33,6 @@ public class ZKManagerImpl implements ZKManager {
         System.out.println("Entered ZKManagerImpl initialize with port: " + port);
         zkConnection = new ZKConnection();
         zkeeper = zkConnection.connect(zooKeeperHostName+ ":" + port.toString());
-//        zkeeper = zkConnection.connect("localhost"+ ":" + port.toString());
     }
 
     public void closeConnection() throws InterruptedException {
@@ -100,9 +100,11 @@ public class ZKManagerImpl implements ZKManager {
         this.create(UINT128_BASE_PATH, Long.toString(0).getBytes());
         this.create(UINT128_HIGH_PATH, Long.toString(0).getBytes());
         this.create(UINT128_LOW_PATH, Long.toString(0).getBytes());
+        this.create(UINT128_LOCK_PATH, Long.toString(0).getBytes());
     }
 
     private String acquire_lock(String path) throws InterruptedException, KeeperException {
+
         String lock_string = createSequentialEphemeral(path+"/lock-", Long.toString(0).getBytes());
         String znode_name = lock_string.substring(lock_string.lastIndexOf('/') + 1);
 
@@ -117,8 +119,10 @@ public class ZKManagerImpl implements ZKManager {
             children.indexOf(znode_name);
 
             System.out.println("[acquire_lock]: children.get(0): " + children.get(0));
-            if (lock_string.endsWith(children.get(0)))
+            if (lock_string.endsWith(children.get(0))) {
+                System.out.println("[acquire_lock]: lock acquired: " + lock_string);
                 return lock_string;
+            }
             System.out.println("[acquire_lock]: watching znode:" + path + "/" + children.get(0));
             if (zkeeper.exists(path + "/" + children.get(0), new Watcher() {
                 @Override
@@ -130,41 +134,47 @@ public class ZKManagerImpl implements ZKManager {
             }
             watcher_semaphore.acquire();
         } while (true);
+
     }
 
     private void release_lock(String node) throws InterruptedException, KeeperException {
+        System.out.println("[release_lock]: node: " + node);
         zkeeper.delete(node, -1);
     }
 
 
     public long generate_timestamp() throws InterruptedException, KeeperException {
-        Transaction transaction = zkeeper.transaction();
-        long timestamp = 0L;
+        Long timestamp = 0L;
         String lock_node = acquire_lock(TIMESTAMP_BASE_PATH);
+        System.out.println("[generate_timestamp]: lock acquired " + lock_node);
         Stat stat = zkeeper.exists(TIMESTAMP_BASE_PATH, false);
         int version = stat.getVersion();
         timestamp = stat.getMzxid();
+        System.out.println("[generate_uint128]: generated high " + timestamp.toString());
         zkeeper.setData(TIMESTAMP_BASE_PATH, Long.toString(timestamp).getBytes(), version);
         release_lock(lock_node);
+        System.out.println("[generate_timestamp]: lock released " + lock_node);
         return timestamp;
     }
 
-//    public uint128 generate_uint128() throws InterruptedException, KeeperException {
-//        String path = "/uint128";
-//        long high = 0;
-//        long low = 0;
-//        if (zkeeper.exists(path, false) == null) {
-//            this.create(path, Long.toString(0).getBytes());
-//        }
-//        if (zkeeper.exists(path+"/high", false) == null) {
-//            this.create(path+"/high", Long.toString(0).getBytes());
-//            this.create(path+"/low", Long.toString(0).getBytes());
-//        }
-//        Stat stat_high = zkeeper.exists(path, false);
-//        timestamp = stat.getMzxid();
-//
-//
-//
-//    }
+    public uint128 generate_uint128() throws InterruptedException, KeeperException {
+        Long high = 0L;
+        Long low = 0L;
+        String lock_node = acquire_lock(UINT128_LOCK_PATH);
+        System.out.println("[generate_uint128]: lock acquired " + lock_node);
+        Stat stat = zkeeper.exists(UINT128_HIGH_PATH, false);
+        int version = stat.getVersion();
+        high = stat.getMzxid();
+        System.out.println("[generate_uint128]: generated high " + high.toString());
+        zkeeper.setData(UINT128_HIGH_PATH, Long.toString(high).getBytes(), version);
+        stat = zkeeper.exists(UINT128_LOW_PATH, false);
+        version = stat.getVersion();
+        low = stat.getMzxid();
+        System.out.println("[generate_uint128]: generated low " + low.toString());
+        zkeeper.setData(UINT128_LOW_PATH, Long.toString(low).getBytes(), version);
+        release_lock(lock_node);
+        System.out.println("[generate_uint128]: lock released " + lock_node);
+        return new uint128(high, low);
+    }
 
 }

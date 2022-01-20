@@ -20,7 +20,8 @@ public class TX {
     List<TR> trs = null;
 
     public TX(uint128 tx_id, long timestamp, List<UTxO> utxos, List<TR> trs) {
-        this.tx_id = tx_id.clone();
+        if (tx_id != null)
+            this.tx_id = tx_id.clone();
         this.timestamp = timestamp;
         this.utxos = new ArrayList<>(utxos);
         this.trs = new ArrayList<>(trs);
@@ -28,6 +29,10 @@ public class TX {
 
     public TX(uint128 tx_id, List<UTxO> utxos, List<TR> trs) {
         this(tx_id, 0, utxos, trs);
+    }
+
+    public TX(List<UTxO> utxos, List<TR> trs) {
+        this(null, 0, utxos, trs);
     }
 
     public TX(TX_m from) {
@@ -45,6 +50,13 @@ public class TX {
                 .addAllTrs(trs.stream().map(TR::to_grpc).collect(Collectors.toList()))
                 .build();
         return res;
+    }
+
+    public boolean assign_TXid(uint128 tx_id) {
+        if (this.tx_id != null)
+            return false;
+        this.tx_id = tx_id;
+        return true;
     }
 
     public boolean assign_timestamp(long timestamp) {
@@ -91,4 +103,13 @@ public class TX {
         return new TX(zero, 0,new ArrayList<>(), tr_list);
     }
 
+    @Override
+    public String toString() {
+        return "TX{" +
+                "tx_id=" + tx_id +
+                ", timestamp=" + timestamp +
+                ", utxos=" + utxos +
+                ", trs=" + trs +
+                '}';
+    }
 }

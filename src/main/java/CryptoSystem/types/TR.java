@@ -48,4 +48,12 @@ public class TR {
     public int hashCode() {
         return Objects.hash(getAddress(), coins);
     }
+
+    @Override
+    public String toString() {
+        return "TR{" +
+                "address=" + address +
+                ", coins=" + Long.toUnsignedString(coins) +
+                '}';
+    }
 }
