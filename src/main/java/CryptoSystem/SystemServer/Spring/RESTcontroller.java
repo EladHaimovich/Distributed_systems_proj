@@ -1,49 +1,108 @@
 package CryptoSystem.SystemServer.Spring;
 
 import CryptoSystem.gRPCwrapper.SystemServerImpl;
-import CryptoSystem.types.TR;
-import CryptoSystem.types.TX;
-import CryptoSystem.types.UTxO;
-import CryptoSystem.types.uint128;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import notsystemserver.grpc.Response_status;
-import notsystemserver.grpc.SystemServerGrpc;
-import notsystemserver.grpc.TX_m;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import CryptoSystem.types.*;
+import notsystemserver.grpc.Response_status;
 import org.springframework.web.bind.annotation.*;
+
+import static CryptoSystem.gRPCwrapper.SystemServerImpl.*;
 
 @RestController
 public class RESTcontroller {
 
     // WORKING?
     // post TX
-    @PostMapping(value = "/TX")
-    public RESTresponse TX(@RequestBody TX tx_request) {
-        System.out.println("Entered Rest: init");
-        SystemServerImpl grpc_server = new SystemServerImpl();
-        Integer port = SystemServerImpl.getGrpcPort();
+    @GetMapping(value = "/test1")
+    public RESTresponse test1() {
+        System.out.println("Entered Rest: test1");
+        String response = "";
 
-        ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", port)
-                .usePlaintext()
-                .build();
+        // send 100 coins to address (1,0)
+        uint128 zero =new uint128(0,0 );
+        uint128 address1 = new uint128(1,0);
+        Response_status status = send_transferCoins(zero, address1, 100L);
+        response += "\nsubmit transaction response: " + status.getResponse();
+        System.out.println("\n\n\n\n\n\n\ngot status " + status.getResponse());
 
-        SystemServerGrpc.SystemServerBlockingStub stub = SystemServerGrpc.newBlockingStub(channel);
+        // get utxos of address (1,0)
+        List<UTxO> address1_utxos = send_getUtxos(address1, 0);
+        assert address1_utxos != null;
+        System.out.println("\n\n\n\n\n\n\ngot utxo List for address1 [" + address1_utxos.stream().map(UTxO::toString).collect(Collectors.joining(",\n")) + "]");
+        response += "\nsend_getUtxos response: " + address1_utxos.toString();
+        assert address1_utxos.size() == 1;
 
-        TX_m tx_m = tx_request.to_grpc();
+        // send 10 coins to address (1,1)
+        uint128 address2 = new uint128(1, 1);
+        TR receiver = new TR(address2, 10);
+        TR remain = new TR(zero, 90);
+        List<TR> output = new ArrayList<TR>();
+        output.add(remain);
+        output.add(receiver);
+        TX transaction = new TX(address1_utxos, output);
+        System.out.println("[test1] sent " + transaction);
+        status = send_submitTransaction(transaction);
+        response += "\nsubmit transaction response: " + status.getResponse();
+        System.out.println("\n\n\n\n\n\n\ngot status " + status.getResponse());
+        List<TX> address1_transactions = send_getTransactions(address1, 0);
+        assert address1_transactions != null;
+        System.out.println("\n\n\n\n\n\n\ngot transaction List for address1 " + address1_transactions.toString());
+        response += "\nsend_getTransactions response: " + address1_transactions.toString();
+        List<TX> address2_transactions = send_getTransactions(address2, 0);
+        assert address2_transactions != null;
+        System.out.println("\n\n\n\n\n\n\ngot transaction List for address1 " + address2_transactions.toString());
+        response += "\nsend_getTransactions response: " + address2_transactions.toString();
 
-        Response_status res_grpc = stub.submitTransaction(tx_m);
+        address1_utxos = send_getUtxos(address1, 0);
+        assert address1_utxos != null;
+        System.out.println("\n\n\n\n\n\n\ngot utxo List for address1 [" + address1_utxos.stream().map(UTxO::toString).collect(Collectors.joining(",\n")) + "]");
+        response += "\nsend_getUtxos response: " + address2_transactions.toString();
 
-        RESTresponse res;
-
-        res = new RESTresponse(res_grpc.getResponse());
-
-        channel.shutdown();
-        return res;
+        return new RESTresponse(response);
     }
+
+    @GetMapping(value = "/test2")
+    public RESTresponse test2() {
+        System.out.println("Entered Rest: test2");
+        uint128 zero =new uint128(0,0 );
+
+        uint128 address1 = zero;
+        uint128 address2 = new uint128(0, 2);
+        uint128 address3 = new uint128(0, 2);
+        UTxO uTxO = new UTxO(zero, zero);
+        List<UTxO> input = new ArrayList<UTxO>();
+        input.add(uTxO);
+        TR receiver = new TR(address2, 2);
+        TR remain = new TR(address1, -3);
+        List<TR> output = new ArrayList<TR>();
+        output.add(remain);
+        output.add(receiver);
+        TX transaction = new TX(input, output);
+        System.out.println("[test1] sent " + transaction);
+        Response_status status = send_submitTransaction(transaction);
+        String response = "submit transaction response: " + status.getResponse();
+        System.out.println("\n\n\n\n\n\n\ngot status " + status.getResponse());
+        List<TX> address1_transactions = send_getTransactions(address1, 0);
+        assert address1_transactions != null;
+        System.out.println("\n\n\n\n\n\n\ngot transaction List for address1 " + address1_transactions.toString());
+        response += "\nsend_getTransactions response: " + address1_transactions.toString();
+        List<TX> address2_transactions = send_getTransactions(address2, 0);
+        assert address2_transactions != null;
+        System.out.println("\n\n\n\n\n\n\ngot transaction List for address2 " + address2_transactions.toString());
+        response += "\nsend_getTransactions response: " + address2_transactions.toString();
+
+
+
+
+
+        return new RESTresponse(response);
+    }
+
+
 
     // GOOD !!
     @GetMapping(value = "/init")
@@ -84,14 +143,15 @@ public class RESTcontroller {
 
     /* example */
     @GetMapping(value = "/TX_FORMAT")
-    public TX get_tx_format() {
+    public RESTresponse get_tx_format() {
         // long timestamp, List<UTxO> utxos, List<TR> trs
-        uint128 tx_id = new uint128(0, 50);
-        long timestamp = 8128;
-        List<UTxO> utxos = new ArrayList<UTxO>();
-        List<TR> trs = new ArrayList<TR>();
-        TX example = new TX(tx_id, timestamp, utxos, trs);
-        return example;
+//        uint128 tx_id = new uint128(0, 50);
+//        long timestamp = 8128;
+//        List<UTxO> utxos = new ArrayList<UTxO>();
+//        List<TR> trs = new ArrayList<TR>();
+//        RESTtransaction example = new RESTtransaction(tx_id, timestamp, utxos, trs);
+        return new RESTresponse("TX_HISTORY OK");
+//        return example;
     }
 
 }

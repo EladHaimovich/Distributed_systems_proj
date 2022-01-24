@@ -157,7 +157,7 @@ public class ZKManagerImpl implements ZKManager {
         return timestamp;
     }
 
-    public uint128 generate_uint128() throws InterruptedException, KeeperException {
+    public uint128 generate_tx_id(Integer shard) throws InterruptedException, KeeperException {
         Long high = 0L;
         Long low = 0L;
         String lock_node = acquire_lock(UINT128_LOCK_PATH);
@@ -174,6 +174,7 @@ public class ZKManagerImpl implements ZKManager {
         zkeeper.setData(UINT128_LOW_PATH, Long.toString(low).getBytes(), version);
         release_lock(lock_node);
         System.out.println("[generate_uint128]: lock released " + lock_node);
+        high = Long.valueOf(shard);
         return new uint128(high, low);
     }
 

@@ -1,13 +1,10 @@
 package CryptoSystem.types;
 
-import com.google.protobuf.ByteString;
-import notsystemserver.grpc.TR_m;
 import notsystemserver.grpc.TX_m;
-import notsystemserver.grpc.UTxO_m;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -52,18 +49,16 @@ public class TX {
         return res;
     }
 
-    public boolean assign_TXid(uint128 tx_id) {
+    public void assign_TXid(uint128 tx_id) {
         if (this.tx_id != null)
-            return false;
+            return;
         this.tx_id = tx_id;
-        return true;
     }
 
-    public boolean assign_timestamp(long timestamp) {
+    public void assign_timestamp(long timestamp) {
         if (this.timestamp != 0)
-            return false;
+            return;
         this.timestamp = timestamp;
-        return true;
     }
 
     public long getTimestamp() {
@@ -112,4 +107,12 @@ public class TX {
                 ", trs=" + trs +
                 '}';
     }
+
+
+    public static class CompareByTimestamp implements Comparator<TX> {
+        public int compare(TX tx1, TX tx2) {
+            return Long.compareUnsigned(tx1.getTimestamp(), tx2.getTimestamp());
+        }
+    }
 }
+

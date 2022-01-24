@@ -82,28 +82,28 @@ public final class Systemserver {
       ".TR_m\"\203\001\n\016Send_Coins_req\022/\n\006sender\030\001 \001(\013" +
       "2\037.notsystemserver.grpc.uint128_m\0221\n\010rec" +
       "eiver\030\002 \001(\0132\037.notsystemserver.grpc.uint1" +
-      "28_m\022\r\n\005coins\030\003 \001(\004\"#\n\017Response_status\022\020" +
-      "\n\010response\030\001 \001(\t\"8\n\tUTxO_list\022+\n\005uxtos\030\001" +
-      " \003(\0132\034.notsystemserver.grpc.UTxO_m\"D\n\020Tr" +
-      "ansaction_list\0220\n\014transactions\030\001 \003(\0132\032.n" +
-      "otsystemserver.grpc.TX_m2\213\005\n\014SystemServe" +
-      "r\022\\\n\013init_Server\022&.notsystemserver.grpc." +
-      "Init_Server_Args\032%.notsystemserver.grpc." +
-      "Response_status\022W\n\022Submit_Transaction\022\032." +
-      "notsystemserver.grpc.TX_m\032%.notsystemser" +
-      "ver.grpc.Response_status\022h\n\027submit_Trans" +
-      "action_list\022&.notsystemserver.grpc.Trans" +
-      "action_list\032%.notsystemserver.grpc.Respo" +
-      "nse_status\022O\n\nSend_Coins\022\032.notsystemserv" +
-      "er.grpc.TX_m\032%.notsystemserver.grpc.Resp" +
-      "onse_status\022d\n\023Publish_Transaction\022&.not" +
-      "systemserver.grpc.Transaction_list\032%.not" +
-      "systemserver.grpc.Response_status\022M\n\tget" +
-      "_utxos\022\037.notsystemserver.grpc.uint128_m\032" +
-      "\037.notsystemserver.grpc.UTxO_list\022T\n\020get_" +
-      "transactions\022\037.notsystemserver.grpc.uint" +
-      "128_m\032\037.notsystemserver.grpc.UTxO_listB\002" +
-      "P\001b\006proto3"
+      "28_m\022\r\n\005coins\030\003 \001(\004\"4\n\017Response_status\022\017" +
+      "\n\007success\030\001 \001(\010\022\020\n\010response\030\002 \001(\t\"8\n\tUTx" +
+      "O_list\022+\n\005uxtos\030\001 \003(\0132\034.notsystemserver." +
+      "grpc.UTxO_m\"D\n\020Transaction_list\0220\n\014trans" +
+      "actions\030\001 \003(\0132\032.notsystemserver.grpc.TX_" +
+      "m2\202\005\n\014SystemServer\022\\\n\013init_Server\022&.nots" +
+      "ystemserver.grpc.Init_Server_Args\032%.nots" +
+      "ystemserver.grpc.Response_status\022W\n\022Subm" +
+      "it_Transaction\022\032.notsystemserver.grpc.TX" +
+      "_m\032%.notsystemserver.grpc.Response_statu" +
+      "s\022]\n\016Transfer_coins\022$.notsystemserver.gr" +
+      "pc.Send_Coins_req\032%.notsystemserver.grpc" +
+      ".Response_status\022M\n\tget_utxos\022\037.notsyste" +
+      "mserver.grpc.uint128_m\032\037.notsystemserver" +
+      ".grpc.UTxO_list\022[\n\020get_transactions\022\037.no" +
+      "tsystemserver.grpc.uint128_m\032&.notsystem" +
+      "server.grpc.Transaction_list\022X\n\023Publish_" +
+      "Transaction\022\032.notsystemserver.grpc.TX_m\032" +
+      "%.notsystemserver.grpc.Response_status\022V" +
+      "\n\027get_transaction_by_txid\022\037.notsystemser" +
+      "ver.grpc.uint128_m\032\032.notsystemserver.grp" +
+      "c.TX_mB\002P\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -150,7 +150,7 @@ public final class Systemserver {
     internal_static_notsystemserver_grpc_Response_status_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_notsystemserver_grpc_Response_status_descriptor,
-        new java.lang.String[] { "Response", });
+        new java.lang.String[] { "Success", "Response", });
     internal_static_notsystemserver_grpc_UTxO_list_descriptor =
       getDescriptor().getMessageTypes().get(7);
     internal_static_notsystemserver_grpc_UTxO_list_fieldAccessorTable = new

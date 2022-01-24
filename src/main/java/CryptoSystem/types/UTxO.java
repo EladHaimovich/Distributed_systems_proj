@@ -4,6 +4,7 @@ import com.google.protobuf.ByteString;
 import notsystemserver.grpc.*;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Objects;
 
 public class UTxO {
@@ -24,11 +25,6 @@ public class UTxO {
         tx_id = new uint128(utxo_m.getTxId());
         address = new uint128(utxo_m.getAddress());
     }
-
-//    public UTxO(TX tx, uint128 address) {
-//        tr = new TR(address, tx.get_amount_by_address(address));
-//        tx_id = tx.getTx_id();
-//    }
 
     public UTxO_m to_grpc() {
         return UTxO_m.newBuilder()
@@ -73,5 +69,11 @@ public class UTxO {
                 "tx_id=" + tx_id +
                 ", address=" + address +
                 '}';
+    }
+
+    public static class CompareByTXid implements Comparator<UTxO> {
+        public int compare(UTxO utxo1, UTxO utxo2) {
+            return (new uint128.uint128comparator()).compare(utxo1.tx_id, utxo2.address);
+        }
     }
 }

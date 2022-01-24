@@ -49,7 +49,12 @@ private static final long serialVersionUID = 0L;
           case 0:
             done = true;
             break;
-          case 10: {
+          case 8: {
+
+            success_ = input.readBool();
+            break;
+          }
+          case 18: {
             java.lang.String s = input.readStringRequireUtf8();
 
             response_ = s;
@@ -87,10 +92,21 @@ private static final long serialVersionUID = 0L;
             notsystemserver.grpc.Response_status.class, notsystemserver.grpc.Response_status.Builder.class);
   }
 
-  public static final int RESPONSE_FIELD_NUMBER = 1;
+  public static final int SUCCESS_FIELD_NUMBER = 1;
+  private boolean success_;
+  /**
+   * <code>bool success = 1;</code>
+   * @return The success.
+   */
+  @java.lang.Override
+  public boolean getSuccess() {
+    return success_;
+  }
+
+  public static final int RESPONSE_FIELD_NUMBER = 2;
   private volatile java.lang.Object response_;
   /**
-   * <code>string response = 1;</code>
+   * <code>string response = 2;</code>
    * @return The response.
    */
   @java.lang.Override
@@ -107,7 +123,7 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
-   * <code>string response = 1;</code>
+   * <code>string response = 2;</code>
    * @return The bytes for response.
    */
   @java.lang.Override
@@ -139,8 +155,11 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
+    if (success_ != false) {
+      output.writeBool(1, success_);
+    }
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(response_)) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 1, response_);
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 2, response_);
     }
     unknownFields.writeTo(output);
   }
@@ -151,8 +170,12 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
+    if (success_ != false) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeBoolSize(1, success_);
+    }
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(response_)) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, response_);
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, response_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -169,6 +192,8 @@ private static final long serialVersionUID = 0L;
     }
     notsystemserver.grpc.Response_status other = (notsystemserver.grpc.Response_status) obj;
 
+    if (getSuccess()
+        != other.getSuccess()) return false;
     if (!getResponse()
         .equals(other.getResponse())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
@@ -182,6 +207,9 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
+    hash = (37 * hash) + SUCCESS_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+        getSuccess());
     hash = (37 * hash) + RESPONSE_FIELD_NUMBER;
     hash = (53 * hash) + getResponse().hashCode();
     hash = (29 * hash) + unknownFields.hashCode();
@@ -317,6 +345,8 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      success_ = false;
+
       response_ = "";
 
       return this;
@@ -345,6 +375,7 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public notsystemserver.grpc.Response_status buildPartial() {
       notsystemserver.grpc.Response_status result = new notsystemserver.grpc.Response_status(this);
+      result.success_ = success_;
       result.response_ = response_;
       onBuilt();
       return result;
@@ -394,6 +425,9 @@ private static final long serialVersionUID = 0L;
 
     public Builder mergeFrom(notsystemserver.grpc.Response_status other) {
       if (other == notsystemserver.grpc.Response_status.getDefaultInstance()) return this;
+      if (other.getSuccess() != false) {
+        setSuccess(other.getSuccess());
+      }
       if (!other.getResponse().isEmpty()) {
         response_ = other.response_;
         onChanged();
@@ -427,9 +461,40 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
+    private boolean success_ ;
+    /**
+     * <code>bool success = 1;</code>
+     * @return The success.
+     */
+    @java.lang.Override
+    public boolean getSuccess() {
+      return success_;
+    }
+    /**
+     * <code>bool success = 1;</code>
+     * @param value The success to set.
+     * @return This builder for chaining.
+     */
+    public Builder setSuccess(boolean value) {
+      
+      success_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>bool success = 1;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearSuccess() {
+      
+      success_ = false;
+      onChanged();
+      return this;
+    }
+
     private java.lang.Object response_ = "";
     /**
-     * <code>string response = 1;</code>
+     * <code>string response = 2;</code>
      * @return The response.
      */
     public java.lang.String getResponse() {
@@ -445,7 +510,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string response = 1;</code>
+     * <code>string response = 2;</code>
      * @return The bytes for response.
      */
     public com.google.protobuf.ByteString
@@ -462,7 +527,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string response = 1;</code>
+     * <code>string response = 2;</code>
      * @param value The response to set.
      * @return This builder for chaining.
      */
@@ -477,7 +542,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string response = 1;</code>
+     * <code>string response = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearResponse() {
@@ -487,7 +552,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string response = 1;</code>
+     * <code>string response = 2;</code>
      * @param value The bytes for response to set.
      * @return This builder for chaining.
      */

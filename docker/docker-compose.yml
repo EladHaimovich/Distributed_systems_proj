@@ -64,9 +64,11 @@ services:
 
   server0000:
     hostname: server0000.local
+    image: systemserver:latest
     build:
       context: .
       dockerfile: docker/Dockerfile
+
     environment:
       - ShardID=0
       - ServerID=0
@@ -79,9 +81,7 @@ services:
 
   server0001:
     hostname: server0001.local
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
+    image: systemserver:latest
     environment:
       - ShardID=0
       - ServerID=1
@@ -94,9 +94,7 @@ services:
 
   server0002:
     hostname: server0002.local
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
+    image: systemserver:latest
     environment:
       - ShardID=0
       - ServerID=2
@@ -109,9 +107,7 @@ services:
 
   server0100:
     hostname: server0100.local
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
+    image: systemserver:latest
     environment:
       - ShardID=1
       - ServerID=0
@@ -124,9 +120,7 @@ services:
 
   server0101:
     hostname: server0101.local
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
+    image: systemserver:latest
     environment:
       - ShardID=1
       - ServerID=1
@@ -139,9 +133,7 @@ services:
 
   server0102:
     hostname: server0102.local
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
+    image: systemserver:latest
     environment:
       - ShardID=1
       - ServerID=2

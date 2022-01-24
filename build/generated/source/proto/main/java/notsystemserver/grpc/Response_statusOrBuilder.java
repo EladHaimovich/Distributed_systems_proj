@@ -8,12 +8,18 @@ public interface Response_statusOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>string response = 1;</code>
+   * <code>bool success = 1;</code>
+   * @return The success.
+   */
+  boolean getSuccess();
+
+  /**
+   * <code>string response = 2;</code>
    * @return The response.
    */
   java.lang.String getResponse();
   /**
-   * <code>string response = 1;</code>
+   * <code>string response = 2;</code>
    * @return The bytes for response.
    */
   com.google.protobuf.ByteString

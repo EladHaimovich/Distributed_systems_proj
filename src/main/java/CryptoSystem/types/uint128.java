@@ -2,6 +2,7 @@ package CryptoSystem.types;
 
 import notsystemserver.grpc.uint128_m;
 
+import java.util.Comparator;
 import java.util.Objects;
 
 public class uint128 {
@@ -46,5 +47,13 @@ public class uint128 {
     @Override
     public String toString() {
         return String.format("0x%016X",high) + String.format("%016X",low) ;
+    }
+
+    public static class uint128comparator implements Comparator<uint128> {
+        public int compare(uint128 arg1, uint128 arg2) {
+            if (arg1.high == arg2.high)
+                return Long.compareUnsigned(arg1.low, arg2.low);
+            return Long.compareUnsigned(arg1.high, arg2.high);
+        }
     }
 }
