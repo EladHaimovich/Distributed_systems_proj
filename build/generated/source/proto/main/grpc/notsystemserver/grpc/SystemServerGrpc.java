@@ -139,27 +139,27 @@ public final class SystemServerGrpc {
     return getGetUtxosMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<notsystemserver.grpc.uint128_m,
+  private static volatile io.grpc.MethodDescriptor<notsystemserver.grpc.get_transactions_m,
       notsystemserver.grpc.Transaction_list> getGetTransactionsMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "get_transactions",
-      requestType = notsystemserver.grpc.uint128_m.class,
+      requestType = notsystemserver.grpc.get_transactions_m.class,
       responseType = notsystemserver.grpc.Transaction_list.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<notsystemserver.grpc.uint128_m,
+  public static io.grpc.MethodDescriptor<notsystemserver.grpc.get_transactions_m,
       notsystemserver.grpc.Transaction_list> getGetTransactionsMethod() {
-    io.grpc.MethodDescriptor<notsystemserver.grpc.uint128_m, notsystemserver.grpc.Transaction_list> getGetTransactionsMethod;
+    io.grpc.MethodDescriptor<notsystemserver.grpc.get_transactions_m, notsystemserver.grpc.Transaction_list> getGetTransactionsMethod;
     if ((getGetTransactionsMethod = SystemServerGrpc.getGetTransactionsMethod) == null) {
       synchronized (SystemServerGrpc.class) {
         if ((getGetTransactionsMethod = SystemServerGrpc.getGetTransactionsMethod) == null) {
           SystemServerGrpc.getGetTransactionsMethod = getGetTransactionsMethod =
-              io.grpc.MethodDescriptor.<notsystemserver.grpc.uint128_m, notsystemserver.grpc.Transaction_list>newBuilder()
+              io.grpc.MethodDescriptor.<notsystemserver.grpc.get_transactions_m, notsystemserver.grpc.Transaction_list>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "get_transactions"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  notsystemserver.grpc.uint128_m.getDefaultInstance()))
+                  notsystemserver.grpc.get_transactions_m.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   notsystemserver.grpc.Transaction_list.getDefaultInstance()))
               .setSchemaDescriptor(new SystemServerMethodDescriptorSupplier("get_transactions"))
@@ -310,7 +310,7 @@ public final class SystemServerGrpc {
 
     /**
      */
-    public void getTransactions(notsystemserver.grpc.uint128_m request,
+    public void getTransactions(notsystemserver.grpc.get_transactions_m request,
         io.grpc.stub.StreamObserver<notsystemserver.grpc.Transaction_list> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetTransactionsMethod(), responseObserver);
     }
@@ -363,7 +363,7 @@ public final class SystemServerGrpc {
             getGetTransactionsMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                notsystemserver.grpc.uint128_m,
+                notsystemserver.grpc.get_transactions_m,
                 notsystemserver.grpc.Transaction_list>(
                   this, METHODID_GET_TRANSACTIONS)))
           .addMethod(
@@ -432,7 +432,7 @@ public final class SystemServerGrpc {
 
     /**
      */
-    public void getTransactions(notsystemserver.grpc.uint128_m request,
+    public void getTransactions(notsystemserver.grpc.get_transactions_m request,
         io.grpc.stub.StreamObserver<notsystemserver.grpc.Transaction_list> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getGetTransactionsMethod(), getCallOptions()), request, responseObserver);
@@ -499,7 +499,7 @@ public final class SystemServerGrpc {
 
     /**
      */
-    public notsystemserver.grpc.Transaction_list getTransactions(notsystemserver.grpc.uint128_m request) {
+    public notsystemserver.grpc.Transaction_list getTransactions(notsystemserver.grpc.get_transactions_m request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getGetTransactionsMethod(), getCallOptions(), request);
     }
@@ -568,7 +568,7 @@ public final class SystemServerGrpc {
     /**
      */
     public com.google.common.util.concurrent.ListenableFuture<notsystemserver.grpc.Transaction_list> getTransactions(
-        notsystemserver.grpc.uint128_m request) {
+        notsystemserver.grpc.get_transactions_m request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getGetTransactionsMethod(), getCallOptions()), request);
     }
@@ -632,7 +632,7 @@ public final class SystemServerGrpc {
               (io.grpc.stub.StreamObserver<notsystemserver.grpc.UTxO_list>) responseObserver);
           break;
         case METHODID_GET_TRANSACTIONS:
-          serviceImpl.getTransactions((notsystemserver.grpc.uint128_m) request,
+          serviceImpl.getTransactions((notsystemserver.grpc.get_transactions_m) request,
               (io.grpc.stub.StreamObserver<notsystemserver.grpc.Transaction_list>) responseObserver);
           break;
         case METHODID_PUBLISH_TRANSACTION:

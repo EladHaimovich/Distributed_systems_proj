@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
+import java.util.stream.Collectors;
 
 
 public class ZKManagerImpl implements ZKManager {
@@ -23,6 +24,7 @@ public class ZKManagerImpl implements ZKManager {
     private static final String UINT128_HIGH_PATH = "/uint128/high";
     private static final String UINT128_LOW_PATH = "/uint128/low";
     private static final String UINT128_LOCK_PATH = "/uint128/lock";
+    public static final String HISTORY_LOCK_PATH = "/history";
 
     public ZKManagerImpl(Integer port) throws IOException, InterruptedException, KeeperException {
         initialize(port);
@@ -101,25 +103,36 @@ public class ZKManagerImpl implements ZKManager {
         this.create(UINT128_HIGH_PATH, Long.toString(0).getBytes());
         this.create(UINT128_LOW_PATH, Long.toString(0).getBytes());
         this.create(UINT128_LOCK_PATH, Long.toString(0).getBytes());
+        this.create(HISTORY_LOCK_PATH, Long.toString(0).getBytes());
     }
 
-    private String acquire_lock(String path) throws InterruptedException, KeeperException {
+    public String history_create_lock() throws InterruptedException, KeeperException {
+        String lock_path = acquire_lock(HISTORY_LOCK_PATH);
+        if (getChildren(HISTORY_LOCK_PATH).size() != 1) {
+            release_lock(lock_path);
+            return null;
+        }
+        return lock_path;
+    }
+
+    public void history_release_lock(String path) throws InterruptedException, KeeperException {
+        release_lock(path);
+    }
+
+    public String acquire_lock(String path) throws InterruptedException, KeeperException {
 
         String lock_string = createSequentialEphemeral(path+"/lock-", Long.toString(0).getBytes());
-        String znode_name = lock_string.substring(lock_string.lastIndexOf('/') + 1);
+        String znode_num = lock_string.substring(lock_string.length()-10);
 
         System.out.println("[acquire_lock]: lock_string: " + lock_string);
-        System.out.println("[acquire_lock]: znode_name: " + znode_name);
+        System.out.println("[acquire_lock]: znode_num: " + znode_num);
 
         do {
             Semaphore watcher_semaphore = new Semaphore(0);
-            List<String> children = zkeeper.getChildren(path, false);
+            List<String> children = zkeeper.getChildren(path, false).stream().map(s -> s.substring(s.length()-10)).collect(Collectors.toList());
             children.sort(Comparator.naturalOrder());
-
-            children.indexOf(znode_name);
-
             System.out.println("[acquire_lock]: children.get(0): " + children.get(0));
-            if (lock_string.endsWith(children.get(0))) {
+            if (children.indexOf(znode_num) == 0) {
                 System.out.println("[acquire_lock]: lock acquired: " + lock_string);
                 return lock_string;
             }
@@ -137,8 +150,7 @@ public class ZKManagerImpl implements ZKManager {
 
     }
 
-    private void release_lock(String node) throws InterruptedException, KeeperException {
-        System.out.println("[release_lock]: node: " + node);
+    public void release_lock(String node) throws InterruptedException, KeeperException {
         zkeeper.delete(node, -1);
     }
 

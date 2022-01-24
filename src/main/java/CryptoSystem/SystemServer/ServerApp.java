@@ -131,7 +131,6 @@ public class ServerApp {
         grpc_service.setServer_id(server_args.get("serverNo"));
         grpc_service.setShard_id(server_args.get("shard"));
         grpc_service.setMyZK(myZK);
-        grpc_service.setZkPort(server_args.get("zkPort"));
         grpc_service.setServerGrpcPort(server_args.get("gRPCPort"));
         Server server = ServerBuilder.forPort(port)
                 .addService((BindableService) new SystemServerImpl()).build();

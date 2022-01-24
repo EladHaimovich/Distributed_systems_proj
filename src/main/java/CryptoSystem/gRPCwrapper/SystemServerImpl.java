@@ -3,6 +3,7 @@ package CryptoSystem.gRPCwrapper;
 import CryptoSystem.SystemServer.ServerApp;
 import CryptoSystem.SystemServer.Spring.RESTresponse;
 import CryptoSystem.ZooKeeper.ZKManager;
+import CryptoSystem.ZooKeeper.ZKManagerImpl;
 import CryptoSystem.types.TR;
 import CryptoSystem.types.TX;
 import CryptoSystem.types.TX.CompareByTimestamp;
@@ -32,11 +33,7 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
     static private Integer shard_id;
     static private Integer server_id;
     static private Integer serverGrpcPort;
-    static private Integer zkPort;
     static private ZKManager myZK;
-
-//    Map<uint128, List<UTxO>> spent_utxos;
-//    Map<uint128, List<UTxO>> unspent_utxos;
 
     List<UTxO> spent_utxos;
     List<UTxO> unspent_utxos;
@@ -66,10 +63,6 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
         SystemServerImpl.serverGrpcPort = serverGrpcPort;
     }
 
-    public static void setZkPort(Integer zkPort) {
-        SystemServerImpl.zkPort = zkPort;
-    }
-
     public static void setMyZK(ZKManager myZK) {
         SystemServerImpl.myZK = myZK;
     }
@@ -81,7 +74,6 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
     private static Integer getLeader(Integer shard) {
         try {
             List<String> servers = myZK.getChildren("/Shards/" + shard);
-//            System.out.println("[getLeaderPort]: Shard: "+ shard + " ,List: " + servers.toString());
             servers.sort(Comparator.naturalOrder());
             return Integer.parseInt(servers.get(0));
 
@@ -182,7 +174,6 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
         try {
             timestamp = myZK.generate_timestamp();
         } catch (Exception e) {
-//            System.out.println("[submitTransaction] failed to generate timestamp");
             e.printStackTrace();
             atomic_transaction_Mutex.release();
             Response_status response = Response_status.newBuilder().setSuccess(false).setResponse("Error: zookeeper failed").build();
@@ -222,10 +213,6 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
                         .filter(tx -> prev_transtactions_ids.contains(tx.getTx_id()))
                         .collect(Collectors.toList());
 
-//        System.out.println("[submitTransaction] used utxos: " + processed_utxos.toString());
-//        System.out.println("[submitTransaction] proposed trs : " + transaction.getTrs().toString());
-//        System.out.println("[submitTransaction] perv txs : " + prev_transactions.toString());
-
         long utxo_sum = prev_transactions.stream()
                         .map(x -> x.getTrs().stream()
                                 .filter(tr -> tr.getAddress().equals(sender))
@@ -233,16 +220,12 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
                                 .reduce(0L, Long::sum))
                         .reduce(0L, Long::sum);
 
-        long utxo_sum_test = 0;
-//        System.out.println("[submitTransaction] test sum of utxos: " + Long.toUnsignedString(utxo_sum_test));
-
         long trs_sum = transaction.getTrs().stream().map(TR::getAmount).reduce(0L, Long::sum);
         if (!transaction_failed && Long.compareUnsigned(utxo_sum, trs_sum) != 0) {
             response_string = "value of UTxOs (" + Long.toUnsignedString(utxo_sum) + ") doesn't match value of TRs(" + Long.toUnsignedString(trs_sum) +")";
             transaction_failed = true;
         }
         if(!transaction_failed) { /* if transaction is valid */
-
             /* update database */
             spent_utxos.addAll(transaction.getUtxos());
             unspent_utxos.removeAll(transaction.getUtxos());
@@ -262,20 +245,12 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
         responseObserver.onNext(response);
         responseObserver.onCompleted();
         return;
-
     }
 
     @Override
     public void publishTransaction(notsystemserver.grpc.TX_m request,
                                    io.grpc.stub.StreamObserver<notsystemserver.grpc.Response_status> responseObserver) {
-        String response_string = null;
-
-        System.out.println("[publishTransaction]shard " + shard_id + ", server " + server_id + "got request: " + request.getTxId().toString());
-
-
         TX transaction = new TX(request);
-
-
         /* if the transaction is new, add it to database and broadcast to other nodes */
         if (!txList.contains(transaction)) {
             if (get_shard_of_address(transaction.getUtxos().get(0).getAddress()).equals(shard_id) ||
@@ -305,11 +280,12 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
     public void getTransactions(notsystemserver.grpc.uint128_m request,
                                 io.grpc.stub.StreamObserver<notsystemserver.grpc.Transaction_list> responseObserver) {
         if (request.isInitialized()) {
+            System.out.println("[getTransactions] got initialized request");
             uint128 address = new uint128(request);
             assert (get_shard_of_address(address).equals(shard_id));
 
             atomic_transaction_Mutex.acquireUninterruptibly();
-            Set<TX_m> transaction = txList.stream()
+            Set<TX_m> transactions = txList.stream()
                     .filter(tx -> (!tx.equals(TX.gen_TX()))) // filter gen transaction since it doesnt have any utxos
                     .filter(tx -> tx.getUtxos()
                             .get(0)
@@ -318,7 +294,7 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
                     .map(TX::to_grpc)
                     .collect(Collectors.toSet());
 
-            transaction.addAll(txList.stream()
+            transactions.addAll(txList.stream()
                     .filter(tx -> tx.getTrs()
                             .stream()
                             .anyMatch(tr -> tr.getAddress().equals(address)))
@@ -326,12 +302,31 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
                     .collect(Collectors.toList()));
             atomic_transaction_Mutex.release();
 
-            Transaction_list result = Transaction_list.newBuilder().addAllTransactions(transaction).build();
+            Transaction_list result = Transaction_list.newBuilder().addAllTransactions(transactions).build();
             responseObserver.onNext(result);
             responseObserver.onCompleted();
             return;
         } else {
+            System.out.println("[getTransactions] got uninitialized request");
             // TODO: add implementation for get all history
+            atomic_transaction_Mutex.acquireUninterruptibly();
+            Set<TX_m> transactions = txList.stream()
+                    .map(TX::to_grpc)
+                    .collect(Collectors.toSet());
+
+            Transaction_list result = Transaction_list.newBuilder().addAllTransactions(transactions).build();
+            responseObserver.onNext(result);
+            responseObserver.onCompleted();
+            try {
+                String lock = myZK.acquire_lock(ZKManagerImpl.HISTORY_LOCK_PATH); // as long as the client side keep this lock, the server wont continue to process requests
+                myZK.release_lock(lock);
+            } catch (InterruptedException | KeeperException e) {
+                e.printStackTrace();
+            }
+            atomic_transaction_Mutex.release();
+
+            return;
+
         }
     }
 
@@ -497,13 +492,6 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
 
                 }
             }
-
-            Runnable runnable =
-                    () -> { System.out.println("Lambda Runnable running"); };
-
-            Thread thread = new Thread(runnable);
-            thread.start();
-
             /* wait all responses (including fails) */
             int number_of_responses;
             do {
@@ -612,11 +600,7 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
                 Integer server = getLeader(shard);
                 Integer server_port = getServerPort(shard, server);
                 String hostname = getHostName(shard, server);
-//                System.out.println("in send_getTransactions: sending address " + address.toString() + " to hostname " + hostname);
                 ManagedChannel channel;
-
-//                System.out.println("sending to " + hostname + ":" + server_port.toString());
-
                 channel = ManagedChannelBuilder.forTarget(hostname + ":" + server_port.toString())
                         .usePlaintext()
                         .build();
@@ -624,14 +608,15 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
                 stub = SystemServerGrpc.newBlockingStub(channel);
 
                 uint128_m request_address = address.to_grpc();
+                get_transactions_m request = get_transactions_m.newBuilder().setSpecificAddress(true).setAddress(request_address).build();
 
-                Transaction_list transactions = stub.getTransactions(request_address);
+                Transaction_list transactions = stub.getTransactions(request);
                 channel.shutdown();
 
                 if (transactions.isInitialized()) {
                     result = transactions.getTransactionsList().stream().map(TX::new).collect(Collectors.toList());
                     result.sort(new CompareByTimestamp());
-                    if (amount != 0 && amount < result.size())
+                    if (amount > 0 && amount < result.size())
                         result = result.subList(result.size() - amount, result.size());
                 }
             } catch (Exception e) {
@@ -640,7 +625,74 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
             }
         } else {
             //TODO: implement get transaction from all shards.
+
+            List<Future<Transaction_list>> futures = new ArrayList<Future<Transaction_list>>();
+            List<ManagedChannel> channels = new ArrayList<ManagedChannel>();
+            String zookeeper_lock = null;
+            Set<TX> transactions = new HashSet<TX>();
+            try {
+                /* create zookeeper lock to prevent shards from processing any request */
+                zookeeper_lock = myZK.history_create_lock(); /* continues only if no other locks */
+                if (zookeeper_lock == null)
+                    return null;
+                List<Integer> shards = myZK.getChildren("/Shards").stream().map(Integer::parseUnsignedInt).collect(Collectors.toList());
+                for (Integer shard:shards) {
+                    Integer leader = getLeader(shard);
+                    Integer server_port = getServerPort(shard, leader);
+                    String hostname = getHostName(shard, leader);
+                    ManagedChannel channel;
+                    channel = ManagedChannelBuilder.forTarget(hostname + ":" + server_port.toString())
+                            .usePlaintext()
+                            .build();
+                    SystemServerGrpc.SystemServerFutureStub stub;
+                    stub = SystemServerGrpc.newFutureStub(channel);
+
+                    get_transactions_m request = get_transactions_m.newBuilder().setSpecificAddress(false).build();
+                    Future<Transaction_list> transaction_list = stub.getTransactions(request);
+                    futures.add(transaction_list);
+                    channels.add(channel);
+                }
+                int number_of_responses;
+                do {
+                    number_of_responses = 0;
+                    for (Future<Transaction_list> future: futures) {
+                        if (future.isDone())
+                            number_of_responses++;
+                    }
+                } while (number_of_responses != channels.size());
+
+                for (Future<Transaction_list> future: futures) {
+                    Transaction_list list = future.get();
+                    if (list.isInitialized()) {
+                        transactions.addAll(list.getTransactionsList().stream().map(TX::new).collect(Collectors.toList()));
+                    }
+                }
+
+                for (ManagedChannel channel: channels) {
+                    channel.shutdown();
+                }
+                result = new ArrayList<TX>(transactions);
+                result.sort(new CompareByTimestamp());
+                if (amount > 0 && amount < result.size())
+                    result = result.subList(result.size() - amount, result.size());
+            } catch (InterruptedException | KeeperException | ExecutionException e) {
+                e.printStackTrace();
+                if (zookeeper_lock != null) {
+                    try {
+                        myZK.release_lock(zookeeper_lock);
+                    } catch (KeeperException | InterruptedException e2) {
+                        e2.printStackTrace();
+                    }
+                }
+                return null;
+            }
+            try {
+                myZK.release_lock(zookeeper_lock);
+            } catch (KeeperException | InterruptedException e2) {
+                e2.printStackTrace();
+            }
         }
+
         return result;
     }
 

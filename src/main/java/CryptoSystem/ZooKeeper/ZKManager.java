@@ -20,4 +20,8 @@ public interface ZKManager {
     public void create_base_znodes() throws InterruptedException, KeeperException;
     public long generate_timestamp() throws InterruptedException, KeeperException;
     public uint128 generate_tx_id(Integer shard) throws InterruptedException, KeeperException;
+    public String history_create_lock() throws InterruptedException, KeeperException;
+    public void history_release_lock(String path) throws InterruptedException, KeeperException;
+    public String acquire_lock(String path) throws InterruptedException, KeeperException;
+    public void release_lock(String node) throws InterruptedException, KeeperException;
 }
