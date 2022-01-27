@@ -148,15 +148,39 @@ public class RESTcontroller {
         // long timestamp, List<UTxO> utxos, List<TR> trs
         uint128 tx_id = new uint128(0, 50);
         long timestamp = 8128;
-        UTxO uTxO
+        UTxO uTxO = new UTxO(new uint128(10,10), new uint128(15,15));
         List<UTxO> utxos = new ArrayList<UTxO>();
+        utxos.add(uTxO);
         List<TR> trs = new ArrayList<TR>();
+        TR tr = new TR(new uint128(10,15), 100);
+        trs.add(tr);
         TX tx  = new TX(tx_id, timestamp, utxos, trs);
 
         Gson gson = new Gson();
-        RESTresponse result = new RESTresponse("SUCCESS", gson.toJson(tx));
+        String json = gson.toJson(tx);
+        System.out.println(json);
+        TX newtx = gson.fromJson(json, TX.class);
+        System.out.println(newtx.toString());
+
+        RESTresponse result = new RESTresponse("SUCCESS", json);
         return result;
 //        return example;
     }
+
+    /* example */
+    @PostMapping(value = "/TX_FORMAT")
+    public RESTresponse post_tx_format(@RequestBody String json) {
+        // long timestamp, List<UTxO> utxos, List<TR> trs
+
+        Gson gson = new Gson();
+        TX tx = gson.fromJson(json, TX.class);
+        System.out.println(tx.toString());
+
+
+        return new RESTresponse("SUCCESS", null);
+//        return example;
+    }
+
+
 
 }

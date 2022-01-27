@@ -1,0 +1,86 @@
+plugins {
+	id 'org.springframework.boot' version '2.6.2'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'com.google.protobuf' version '0.8.17'
+}
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'idea'
+
+ext.javaMainClass = "CryptoSystem.SystemServer.ServerApp"
+
+sourceSets.main.java.srcDirs += ['src/main/java']
+sourceSets.main.java.srcDirs += ['src/main/proto']
+//sourceSets.main.java.srcDirs += ['src/main/grpc']
+sourceSets.main.java.srcDirs += ['build/generated/source/proto/main/grpc']
+sourceSets.main.java.srcDirs += ['build/generated/source/proto/main/java']
+
+application {
+	mainClassName = javaMainClass
+}
+
+protobuf {
+	protoc {
+		artifact = "com.google.protobuf:protoc:3.19.1"
+	}
+	plugins {
+		grpc {
+			artifact = 'io.grpc:protoc-gen-grpc-java:1.43.1'
+		}
+
+	}
+//	generatedFilesBaseDir = 'src'
+	generateProtoTasks {
+		all()*.plugins {
+			grpc {}
+		}
+	}
+
+
+}
+
+group = 'CryptoSystem'
+version = '0.0.1'
+sourceCompatibility = '11'
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	set('springCloudVersion', "2021.0.0")
+
+}
+
+
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation 'org.apache.zookeeper:zookeeper:3.7.0'
+	implementation 'io.grpc:grpc-netty-shaded:1.43.2'
+	implementation 'io.grpc:grpc-protobuf:1.43.2'
+	implementation 'io.grpc:grpc-stub:1.43.2'
+	implementation 'com.google.code.gson:gson:2.8.9'
+	compileOnly 'org.apache.tomcat:annotations-api:6.0.53' // necessary for Java 9+
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+test {
+	useJUnitPlatform()
+}
+
+jar {
+	manifest {
+		attributes(
+				'Manifest-Version': '1.0',
+				'Main-Class': "CryptoSystem.SystemServer.ServerApp"
+		)
+	}
+
+}
