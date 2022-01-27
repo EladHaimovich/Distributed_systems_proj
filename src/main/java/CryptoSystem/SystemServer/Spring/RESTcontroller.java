@@ -11,6 +11,7 @@ import notsystemserver.grpc.Response_status;
 import org.springframework.web.bind.annotation.*;
 
 import static CryptoSystem.gRPCwrapper.SystemServerImpl.*;
+import com.google.gson.Gson;
 
 @RestController
 public class RESTcontroller {
@@ -62,7 +63,7 @@ public class RESTcontroller {
         System.out.println("\n\n\n\n\n\n\ngot utxo List for address1 [" + address1_utxos.stream().map(UTxO::toString).collect(Collectors.joining(",\n")) + "]");
         response += "\nsend_getUtxos response: " + address2_transactions.toString();
 
-        return new RESTresponse(response);
+        return new RESTresponse("SUCCESS", response);
     }
 
     @GetMapping(value = "/test2")
@@ -99,7 +100,7 @@ public class RESTcontroller {
 
 
 
-        return new RESTresponse(response);
+        return new RESTresponse("SUCCESS", response);
     }
 
 
@@ -110,9 +111,9 @@ public class RESTcontroller {
         System.out.println("Entered Rest: init");
         RESTresponse res;
         if (SystemServerImpl.send_initServer())
-            res = new RESTresponse("Init OK");
+            res = new RESTresponse("SUCCESS", "Init OK");
         else
-            res = new RESTresponse("Init Failed");
+            res = new RESTresponse("fail", "Init Failed");
         return res;
     }
     /* Submit == Post , anything else is a "get". */
@@ -124,7 +125,7 @@ public class RESTcontroller {
         // DO THINGS
 
         //
-        return new RESTresponse("SendMoney OK");
+        return new RESTresponse("SUCCESS", "SendMoney OK");
     }
     // Submit transaction list
 
@@ -138,19 +139,23 @@ public class RESTcontroller {
         // DO THINGS
 
         //
-        return new RESTresponse("TX_HISTORY OK");
+        return new RESTresponse("SUCCESS", "TX_HISTORY OK");
     }
 
     /* example */
     @GetMapping(value = "/TX_FORMAT")
     public RESTresponse get_tx_format() {
         // long timestamp, List<UTxO> utxos, List<TR> trs
-//        uint128 tx_id = new uint128(0, 50);
-//        long timestamp = 8128;
-//        List<UTxO> utxos = new ArrayList<UTxO>();
-//        List<TR> trs = new ArrayList<TR>();
-//        RESTtransaction example = new RESTtransaction(tx_id, timestamp, utxos, trs);
-        return new RESTresponse("TX_HISTORY OK");
+        uint128 tx_id = new uint128(0, 50);
+        long timestamp = 8128;
+        UTxO uTxO
+        List<UTxO> utxos = new ArrayList<UTxO>();
+        List<TR> trs = new ArrayList<TR>();
+        TX tx  = new TX(tx_id, timestamp, utxos, trs);
+
+        Gson gson = new Gson();
+        RESTresponse result = new RESTresponse("SUCCESS", gson.toJson(tx));
+        return result;
 //        return example;
     }
 
