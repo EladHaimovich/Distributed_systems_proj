@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 
 import CryptoSystem.types.*;
 import notsystemserver.grpc.Response_status;
+import notsystemserver.grpc.Send_Coins_req;
+
 import org.springframework.web.bind.annotation.*;
 
 import static CryptoSystem.gRPCwrapper.SystemServerImpl.*;
@@ -24,8 +26,8 @@ public class RESTcontroller {
         String response = "";
 
         // send 100 coins to address (1,0)
-        uint128 zero =new uint128(0,0 );
-        uint128 address1 = new uint128(1,0);
+        uint128 zero = new uint128(0, 0);
+        uint128 address1 = new uint128(1, 0);
         Response_status status = send_transferCoins(zero, address1, 100L);
         response += "\nsubmit transaction response: " + status.getResponse();
         System.out.println("\n\n\n\n\n\n\ngot status " + status.getResponse());
@@ -33,7 +35,8 @@ public class RESTcontroller {
         // get utxos of address (1,0)
         List<UTxO> address1_utxos = send_getUtxos(address1, 0);
         assert address1_utxos != null;
-        System.out.println("\n\n\n\n\n\n\ngot utxo List for address1 [" + address1_utxos.stream().map(UTxO::toString).collect(Collectors.joining(",\n")) + "]");
+        System.out.println("\n\n\n\n\n\n\ngot utxo List for address1 ["
+                + address1_utxos.stream().map(UTxO::toString).collect(Collectors.joining(",\n")) + "]");
         response += "\nsend_getUtxos response: " + address1_utxos.toString();
         assert address1_utxos.size() == 1;
 
@@ -60,7 +63,8 @@ public class RESTcontroller {
 
         address1_utxos = send_getUtxos(address1, 0);
         assert address1_utxos != null;
-        System.out.println("\n\n\n\n\n\n\ngot utxo List for address1 [" + address1_utxos.stream().map(UTxO::toString).collect(Collectors.joining(",\n")) + "]");
+        System.out.println("\n\n\n\n\n\n\ngot utxo List for address1 ["
+                + address1_utxos.stream().map(UTxO::toString).collect(Collectors.joining(",\n")) + "]");
         response += "\nsend_getUtxos response: " + address2_transactions.toString();
 
         return new RESTresponse("SUCCESS", response);
@@ -69,7 +73,7 @@ public class RESTcontroller {
     @GetMapping(value = "/test2")
     public RESTresponse test2() {
         System.out.println("Entered Rest: test2");
-        uint128 zero =new uint128(0,0 );
+        uint128 zero = new uint128(0, 0);
 
         uint128 address1 = zero;
         uint128 address2 = new uint128(0, 2);
@@ -95,15 +99,8 @@ public class RESTcontroller {
         assert address2_transactions != null;
         System.out.println("\n\n\n\n\n\n\ngot transaction List for address2 " + address2_transactions.toString());
         response += "\nsend_getTransactions response: " + address2_transactions.toString();
-
-
-
-
-
         return new RESTresponse("SUCCESS", response);
     }
-
-
 
     // GOOD !!
     @GetMapping(value = "/init")
@@ -119,8 +116,9 @@ public class RESTcontroller {
     /* Submit == Post , anything else is a "get". */
 
     // Submit money to address
-    @GetMapping(value = "/SendMoney")
-    public RESTresponse SendMoney() {
+    @GetMapping(value = "/SendMoney/{address}/{amount}")
+    public RESTresponse SendMoney(@RequestBody string SendMoney, @PathVariable long address,
+            @PathVariable long amount) {
         System.out.println("Entered Rest: SendMoney");
         // DO THINGS
 
@@ -142,19 +140,19 @@ public class RESTcontroller {
         return new RESTresponse("SUCCESS", "TX_HISTORY OK");
     }
 
-    /* example */
+    // Get /transaction */
     @GetMapping(value = "/TX_FORMAT")
     public RESTresponse get_tx_format() {
         // long timestamp, List<UTxO> utxos, List<TR> trs
         uint128 tx_id = new uint128(0, 50);
         long timestamp = 8128;
-        UTxO uTxO = new UTxO(new uint128(10,10), new uint128(15,15));
+        UTxO uTxO = new UTxO(new uint128(10, 10), new uint128(15, 15));
         List<UTxO> utxos = new ArrayList<UTxO>();
         utxos.add(uTxO);
         List<TR> trs = new ArrayList<TR>();
-        TR tr = new TR(new uint128(10,15), 100);
+        TR tr = new TR(new uint128(10, 15), 100);
         trs.add(tr);
-        TX tx  = new TX(tx_id, timestamp, utxos, trs);
+        TX tx = new TX(tx_id, timestamp, utxos, trs);
 
         Gson gson = new Gson();
         String json = gson.toJson(tx);
@@ -164,23 +162,43 @@ public class RESTcontroller {
 
         RESTresponse result = new RESTresponse("SUCCESS", json);
         return result;
-//        return example;
+        // return example;
     }
 
-    /* example */
-    @PostMapping(value = "/TX_FORMAT")
-    public RESTresponse post_tx_format(@RequestBody String json) {
-        // long timestamp, List<UTxO> utxos, List<TR> trs
-
-        Gson gson = new Gson();
-        TX tx = gson.fromJson(json, TX.class);
-        System.out.println(tx.toString());
-
-
-        return new RESTresponse("SUCCESS", null);
-//        return example;
-    }
-
-
-
+    // // Post /transaction */
+    // @PostMapping(value = "/transaction/{id}/{timestamp}/{utxos}/{trs}")
+    // public RESTresponse post_tx(@RequestBody TX newTx, @PathVariable uint128 id,
+    // @PathVariable Long timestamp) {
+    // // long timestamp, List<UTxO> utxos, List<TR> trs
+    // UTxO uTxO = new UTxO(id, timestamp);
+    // List<UTxO> utxos = new ArrayList<UTxO>();
+    // utxos.add(uTxO);
+    // Gson gson = new Gson();
+    // String json = gson.toJson(tx);
+    // TX tx = gson.fromJson(json, TX.class);
+    // System.out.println(tx.toString());
+    // return new RESTresponse("SUCCESS", null);
+    // // return example;
+    // }
 }
+
+// // post /transaction */
+// @PostMapping(value = "/transaction/{id}/{timestamp}/{utxos}/{trs}")
+// public RESTresponse post_tx(@RequestBody TX newTx, @PathVariable uint128 id,
+// @PathVariable Long timestamp,
+// @PathVariable List<UTxO> utxos, @PathVariable List<TR> trs) {
+// return new TX(id, timestamp, utxos, trs); // can't return TX...
+
+/*
+ * Sababa
+ * 1. post /transaction - body=tx
+ * 2. post /sendcoins - body=sender&reseve&amount
+ * 3. get /utxo/{adress}
+ * 4. get /transaction?amount={amount}
+ * 5. get /transaction/{adress}?amount={amount}
+ * 4+5 can be the same function.
+ * function: send_getTransactions(adress, amount) - checks if exist, if
+ * NULL=adress it does 4 else its 5.
+ * if amount is 0 than its like it got no amount.
+ * 
+ */
