@@ -26,6 +26,7 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
+import com.google.gson.Gson;
 
 
 public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
@@ -238,10 +239,12 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
             /* broadcast to all the servers */
             TX_m updated_request = TX_m.newBuilder().mergeFrom(transaction.to_grpc()).build();
             send_publishTransaction(updated_request);
-            response_string = "OK";
+            Gson gson = new Gson();
+            String json = gson.toJson(transaction.getTx_id());
+            response_string = "transaction ID = " + json;
         }
         atomic_transaction_Mutex.release();
-        Response_status response = Response_status.newBuilder().setSuccess(response_string.equals("OK")).setResponse(response_string).build();
+        Response_status response = Response_status.newBuilder().setSuccess(!transaction_failed).setResponse(response_string).build();
         responseObserver.onNext(response);
         responseObserver.onCompleted();
         return;
@@ -398,7 +401,10 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
                 /* broadcast to all the servers */
                 TX_m updated_request = TX_m.newBuilder().mergeFrom(transaction.to_grpc()).build();
                 send_publishTransaction(updated_request);
-                return_status = "transaction ID = " + transaction.getTx_id().toString();
+                Gson gson = new Gson();
+                String json = gson.toJson(transaction.getTx_id());
+
+                return_status = "transaction ID = " + json;
             } catch (KeeperException | InterruptedException e) {
                 transfer_failed = true;
                 return_status = "Error: zookeeper error";
@@ -608,9 +614,9 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
                 stub = SystemServerGrpc.newBlockingStub(channel);
 
                 uint128_m request_address = address.to_grpc();
-                get_transactions_m request = get_transactions_m.newBuilder().setSpecificAddress(true).setAddress(request_address).build();
+//                get_transactions_m request = get_transactions_m.newBuilder().setSpecificAddress(true).setAddress(request_address).build();
 
-                Transaction_list transactions = stub.getTransactions(request);
+                Transaction_list transactions = stub.getTransactions(request_address);
                 channel.shutdown();
 
                 if (transactions.isInitialized()) {
@@ -646,9 +652,9 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
                             .build();
                     SystemServerGrpc.SystemServerFutureStub stub;
                     stub = SystemServerGrpc.newFutureStub(channel);
-
+                    uint128_m request_address = uint128_m.newBuilder().build();
                     get_transactions_m request = get_transactions_m.newBuilder().setSpecificAddress(false).build();
-                    Future<Transaction_list> transaction_list = stub.getTransactions(request);
+                    Future<Transaction_list> transaction_list = stub.getTransactions(request_address);
                     futures.add(transaction_list);
                     channels.add(channel);
                 }
