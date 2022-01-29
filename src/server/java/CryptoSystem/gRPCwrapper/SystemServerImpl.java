@@ -280,11 +280,12 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
         return;
     }
 
-    public void getTransactions(notsystemserver.grpc.uint128_m request,
+    public void getTransactions(notsystemserver.grpc.get_transactions_m request,
                                 io.grpc.stub.StreamObserver<notsystemserver.grpc.Transaction_list> responseObserver) {
-        if (request.isInitialized()) {
+
+        if (request.getSpecificAddress()) {
             System.out.println("[getTransactions] got initialized request");
-            uint128 address = new uint128(request);
+            uint128 address = new uint128(request.getAddress());
             assert (get_shard_of_address(address).equals(shard_id));
 
             atomic_transaction_Mutex.acquireUninterruptibly();
@@ -614,9 +615,9 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
                 stub = SystemServerGrpc.newBlockingStub(channel);
 
                 uint128_m request_address = address.to_grpc();
-//                get_transactions_m request = get_transactions_m.newBuilder().setSpecificAddress(true).setAddress(request_address).build();
+                get_transactions_m request = get_transactions_m.newBuilder().setSpecificAddress(true).setAddress(request_address).build();
 
-                Transaction_list transactions = stub.getTransactions(request_address);
+                Transaction_list transactions = stub.getTransactions(request);
                 channel.shutdown();
 
                 if (transactions.isInitialized()) {
@@ -654,7 +655,7 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
                     stub = SystemServerGrpc.newFutureStub(channel);
                     uint128_m request_address = uint128_m.newBuilder().build();
                     get_transactions_m request = get_transactions_m.newBuilder().setSpecificAddress(false).build();
-                    Future<Transaction_list> transaction_list = stub.getTransactions(request_address);
+                    Future<Transaction_list> transaction_list = stub.getTransactions(request);
                     futures.add(transaction_list);
                     channels.add(channel);
                 }

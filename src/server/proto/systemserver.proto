@@ -52,7 +52,6 @@ message Transaction_list {
 message get_transactions_m {
   bool specific_address = 1;
   uint128_m address = 2;
-  string lock_path = 3;
 }
 
 service SystemServer {
@@ -60,7 +59,7 @@ service SystemServer {
   rpc Submit_Transaction(TX_m) returns (Response_status);
   rpc Transfer_coins(Send_Coins_req) returns (Response_status);
   rpc get_utxos(uint128_m) returns (UTxO_list);
-  rpc get_transactions(uint128_m) returns (Transaction_list);
+  rpc get_transactions(get_transactions_m) returns (Transaction_list);
 
   rpc Publish_Transaction(TX_m) returns (Response_status);
   rpc get_transaction_by_txid(uint128_m) returns (TX_m);
