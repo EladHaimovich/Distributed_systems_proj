@@ -56,7 +56,7 @@ ext {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+//	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	implementation 'org.apache.zookeeper:zookeeper:3.7.0'
 	implementation 'io.grpc:grpc-netty-shaded:1.43.2'
 	implementation 'io.grpc:grpc-protobuf:1.43.2'

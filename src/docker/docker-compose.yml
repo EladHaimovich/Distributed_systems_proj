@@ -67,7 +67,7 @@ services:
     image: systemserver:latest
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: src/docker/Dockerfile
 
     environment:
       - ShardID=0
