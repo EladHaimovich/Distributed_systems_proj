@@ -10,7 +10,7 @@ FROM openjdk:11
 
 RUN mkdir /server
 COPY --from=builder /build/build/libs/SystemServer-0.0.1.jar /server
-COPY --from=builder /build/docker/Entrypoint.sh /server
+COPY --from=builder /build/src/docker/Entrypoint.sh /server
 
 WORKDIR /server
 
