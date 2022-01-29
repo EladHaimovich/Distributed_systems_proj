@@ -398,7 +398,7 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
                 /* broadcast to all the servers */
                 TX_m updated_request = TX_m.newBuilder().mergeFrom(transaction.to_grpc()).build();
                 send_publishTransaction(updated_request);
-                return_status = "OK";
+                return_status = "transaction ID = " + transaction.getTx_id().toString();
             } catch (KeeperException | InterruptedException e) {
                 transfer_failed = true;
                 return_status = "Error: zookeeper error";
@@ -754,7 +754,7 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
             channel.shutdown();
         } catch (Exception e) {
             e.printStackTrace();
-            response = Response_status.newBuilder().setSuccess(false).setResponse("Error: coin transfer failed failed").build();
+            response = Response_status.newBuilder().setSuccess(false).setResponse("Error: coin transfer failed").build();
         }
         return response;
     }

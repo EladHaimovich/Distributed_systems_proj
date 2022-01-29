@@ -52,7 +52,7 @@ public class RESTcontroller {
 
 
     // Submit money to address
-    @GetMapping(value = "/SendMoney")
+    @PostMapping(value = "/SendMoney")
     public RESTresponse SendMoney(@RequestBody String json) {
         System.out.println("Entered Rest: SendMoney");
         Gson gson = new Gson();
