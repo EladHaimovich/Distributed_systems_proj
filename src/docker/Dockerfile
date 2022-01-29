@@ -4,7 +4,14 @@ COPY . /build
 
 WORKDIR /build
 
-RUN mv src/server src/main && cp -r ./src/main/gradle/* . && ./gradlew build
+RUN apt update && apt install dos2unix
+
+RUN mv src/server src/main 
+RUN cp -r ./src/main/gradle/* . 
+
+RUN dos2unix gradlew
+
+RUN ./gradlew build 
 
 FROM openjdk:11
 
