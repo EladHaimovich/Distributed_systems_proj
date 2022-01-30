@@ -21,7 +21,6 @@ public class ZKManagerImpl implements ZKManager {
 
     private static final String TIMESTAMP_BASE_PATH = "/Timestamp";
     private static final String UINT128_BASE_PATH = "/uint128";
-    private static final String UINT128_HIGH_PATH = "/uint128/high";
     private static final String UINT128_LOW_PATH = "/uint128/low";
     private static final String UINT128_LOCK_PATH = "/uint128/lock";
     public static final String HISTORY_LOCK_PATH = "/history";
@@ -100,7 +99,6 @@ public class ZKManagerImpl implements ZKManager {
     public void create_base_znodes() throws InterruptedException, KeeperException {
         this.create(TIMESTAMP_BASE_PATH, Long.toString(0).getBytes());
         this.create(UINT128_BASE_PATH, Long.toString(0).getBytes());
-        this.create(UINT128_HIGH_PATH, Long.toString(0).getBytes());
         this.create(UINT128_LOW_PATH, Long.toString(0).getBytes());
         this.create(UINT128_LOCK_PATH, Long.toString(0).getBytes());
         this.create(HISTORY_LOCK_PATH, Long.toString(0).getBytes());
@@ -123,20 +121,14 @@ public class ZKManagerImpl implements ZKManager {
 
         String lock_string = createSequentialEphemeral(path+"/lock-", Long.toString(0).getBytes());
         String znode_num = lock_string.substring(lock_string.length()-10);
-
-        System.out.println("[acquire_lock]: lock_string: " + lock_string);
-        System.out.println("[acquire_lock]: znode_num: " + znode_num);
-
         do {
             Semaphore watcher_semaphore = new Semaphore(0);
             List<String> children = zkeeper.getChildren(path, false).stream().map(s -> s.substring(s.length()-10)).collect(Collectors.toList());
             children.sort(Comparator.naturalOrder());
-            System.out.println("[acquire_lock]: children.get(0): " + children.get(0));
             if (children.indexOf(znode_num) == 0) {
-                System.out.println("[acquire_lock]: lock acquired: " + lock_string);
+
                 return lock_string;
             }
-            System.out.println("[acquire_lock]: watching znode:" + path + "/" + children.get(0));
             if (zkeeper.exists(path + "/" + children.get(0), new Watcher() {
                 @Override
                 public void process(WatchedEvent event) {
@@ -154,18 +146,14 @@ public class ZKManagerImpl implements ZKManager {
         zkeeper.delete(node, -1);
     }
 
-
     public long generate_timestamp() throws InterruptedException, KeeperException {
         Long timestamp = 0L;
         String lock_node = acquire_lock(TIMESTAMP_BASE_PATH);
-        System.out.println("[generate_timestamp]: lock acquired " + lock_node);
         Stat stat = zkeeper.exists(TIMESTAMP_BASE_PATH, false);
         int version = stat.getVersion();
         timestamp = stat.getMzxid();
-        System.out.println("[generate_uint128]: generated high " + timestamp.toString());
         zkeeper.setData(TIMESTAMP_BASE_PATH, Long.toString(timestamp).getBytes(), version);
         release_lock(lock_node);
-        System.out.println("[generate_timestamp]: lock released " + lock_node);
         return timestamp;
     }
 
@@ -173,19 +161,13 @@ public class ZKManagerImpl implements ZKManager {
         Long high = 0L;
         Long low = 0L;
         String lock_node = acquire_lock(UINT128_LOCK_PATH);
-        System.out.println("[generate_uint128]: lock acquired " + lock_node);
-        Stat stat = zkeeper.exists(UINT128_HIGH_PATH, false);
-        int version = stat.getVersion();
-        high = stat.getMzxid();
-        System.out.println("[generate_uint128]: generated high " + high.toString());
-        zkeeper.setData(UINT128_HIGH_PATH, Long.toString(high).getBytes(), version);
+        Stat stat;
+        int version;
         stat = zkeeper.exists(UINT128_LOW_PATH, false);
         version = stat.getVersion();
         low = stat.getMzxid();
-        System.out.println("[generate_uint128]: generated low " + low.toString());
         zkeeper.setData(UINT128_LOW_PATH, Long.toString(low).getBytes(), version);
         release_lock(lock_node);
-        System.out.println("[generate_uint128]: lock released " + lock_node);
         high = Long.valueOf(shard);
         return new uint128(high, low);
     }

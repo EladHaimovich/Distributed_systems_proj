@@ -113,7 +113,6 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
     @Override
     public void initServer(Init_Server_Args request,
                            StreamObserver<Response_status> responseObserver) {
-//        System.out.println("Entered init server " + shard_id.toString() + " " + server_id.toString());
 
         if (getLeader(shard_id).equals(server_id)) {
             try {
@@ -150,10 +149,6 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
             unspent_utxos.add(UTxO.genUTxO());
             txList.add(TX.gen_TX());
 
-//            System.out.println("[init server] database initialized." +
-//                                "\n spent utxos = " + spent_utxos.toString() +
-//                                "\n unspent utxos = " + unspent_utxos.toString() +
-//                                "\n transaction list = " + txList.toString());
         }
 
 
@@ -270,7 +265,8 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
                 Response_status response = Response_status.newBuilder().setSuccess(true).setResponse("OK").build();
                 responseObserver.onNext(response);
                 responseObserver.onCompleted();
-                send_publishTransaction(request);
+                if(get_shard_of_address(transaction.getUtxos().get(0).getAddress()).equals(shard_id))
+                    send_publishTransaction(request);
                 return;
             }
         }
@@ -284,7 +280,6 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
                                 io.grpc.stub.StreamObserver<notsystemserver.grpc.Transaction_list> responseObserver) {
 
         if (request.getSpecificAddress()) {
-            System.out.println("[getTransactions] got initialized request");
             uint128 address = new uint128(request.getAddress());
             assert (get_shard_of_address(address).equals(shard_id));
 
@@ -311,7 +306,6 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
             responseObserver.onCompleted();
             return;
         } else {
-            System.out.println("[getTransactions] got uninitialized request");
             // TODO: add implementation for get all history
             atomic_transaction_Mutex.acquireUninterruptibly();
             Set<TX_m> transactions = txList.stream()
@@ -435,10 +429,8 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
             Integer server  = getLeader(shard);
             Integer server_port = getServerPort(shard, server);
             String hostname = getHostName(shard, server);
-//            System.out.println("in send_submitTransaction: sending TX " + transaction + " to hostname " + hostname);
             ManagedChannel channel;
 
-//            System.out.println("sending to " + hostname + ":" + server_port.toString());
 
             channel = ManagedChannelBuilder.forTarget(hostname + ":" + server_port.toString())
                     .usePlaintext()
@@ -467,26 +459,43 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
     public void send_publishTransaction(notsystemserver.grpc.TX_m request) {
 
         TX transaction = new TX(request);
-        System.out.println("Entered send_publishTransactions " + shard_id.toString() + " " + server_id.toString()
-                + "\nTX_id:" + transaction.getTx_id());
         Set<Integer> shards = transaction.getTrs().stream()
                                                     .map(tr -> get_shard_of_address(tr.getAddress()))
                                                     .collect(Collectors.toSet());
+        shards.remove(shard_id);
 
         try {
             List<ManagedChannel> channels = new ArrayList<ManagedChannel>();
             List<Future<Response_status>> futures = new ArrayList<Future<Response_status>>();
 
+            // first, send to own shard
+            List<Integer> servers = myZK.getChildren("/Shards/"+shard_id.toString()).stream().map(Integer::parseInt).collect(Collectors.toList());
+            for (Integer server:servers) {
+                if (server.equals(server_id))
+                    continue;
+                Integer server_port = getServerPort(shard_id, server);
+                String hostname = getHostName(shard_id, server);
+
+                /* send to all servers */
+                ManagedChannel channel = ManagedChannelBuilder.forTarget(hostname + ":" + server_port.toString())
+                        .usePlaintext()
+                        .build();
+                SystemServerGrpc.SystemServerFutureStub stub = SystemServerGrpc.newFutureStub(channel);
+                Future<Response_status> future = stub.publishTransaction(request);
+                futures.add(future);
+                channels.add(channel);
+
+            }
+
+            // now, send to all other shards
             for (Integer shard:shards) {
-                List<Integer> servers = myZK.getChildren("/Shards/"+shard).stream().map(Integer::parseInt).collect(Collectors.toList());
+                servers = myZK.getChildren("/Shards/"+shard).stream().map(Integer::parseInt).collect(Collectors.toList());
                 for (Integer server:servers) {
                     if (server.equals(server_id) && shard.equals(shard_id))
                         continue;
-                    System.out.println("in send_publishTransaction: sending transaction to shard: " + shard);
+
                     Integer server_port = getServerPort(shard, server);
                     String hostname = getHostName(shard, server);
-                    System.out.println("sending to " + hostname + ":" + server_port.toString());
-
 
                     /* send to all servers */
                     ManagedChannel channel = ManagedChannelBuilder.forTarget(hostname + ":" + server_port.toString())
@@ -521,26 +530,19 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
     }
 
     public static boolean send_initServer() {
-//        System.out.println("Entered send_initServer " + shard_id.toString() + " " + server_id.toString());
         try {
             List<String> shards = myZK.getChildren("/Shards");
             for (String shard:shards) {
                 Integer server  = getLeader(Integer.parseInt(shard));
                 Integer server_port = getServerPort(Integer.parseInt(shard), getLeader(Integer.parseInt(shard)));
-//                System.out.println("in send_initServer: sending init to shard: " + shard + ", server: " + server.toString() +  ", port: " + server_port.toString());
                 ManagedChannel channel;
                 try {
                     String hostname = getHostName(Integer.parseInt(shard), server);
-//                    System.out.println("sending to " + hostname + ":" + server_port.toString());
 
                     channel = ManagedChannelBuilder.forTarget(hostname + ":" + server_port.toString())
                             .usePlaintext()
                             .build();
-//                    channel = ManagedChannelBuilder.forAddress(hostname, server_port)
-//                            .usePlaintext()
-//                            .build();
                 } catch (Exception e) {
-//                    System.out.println("[send_initServer] got wierd exception when creating channel " + e.getMessage());
                     e.printStackTrace();
                     return false;
                 }
@@ -548,10 +550,8 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
                 try {
                     stub = SystemServerGrpc.newBlockingStub(channel);
                 } catch (Exception e) {
-                    System.out.println("[send_initServer] got wierd exception when creating stub " + e.getMessage());
-                    System.out.println(e.getCause().getMessage());
+                    System.out.println("[send_initServer] got exception when creating stub " + e.getMessage());
                     e.getCause().printStackTrace();
-//                    e.printStackTrace();
                     return false;
                 }
 
@@ -561,8 +561,8 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
                 try {
                     res_grpc = stub.initServer(args);
                 } catch (Exception e) {
-                    System.out.println("[send_initServer] got wierd exception when creating stub " + e.getMessage());
-//                    e.printStackTrace();
+                    System.out.println("[send_initServer] got exception when creating stub " + e.getMessage());
+                    e.printStackTrace();
                     return false;
                 }
 
@@ -573,7 +573,7 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
                     }
                     channel.shutdown();
                 }catch (Exception e) {
-                    System.out.println("[send_initServer] got wierd exception when shutting down channel " + e.getMessage());
+                    System.out.println("[send_initServer] got exception when shutting down channel " + e.getMessage());
                     e.printStackTrace();
                     return false;
 
@@ -583,12 +583,10 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
 
         } catch (InterruptedException | KeeperException | NullPointerException e) {
             System.out.println("[send_initServer] got exception " + e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
-
             e.printStackTrace();
             return false;
         } catch (Exception e) {
             System.out.println("[send_initServer] got wierd exception " + e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
-
             e.printStackTrace();
             return false;
 
@@ -712,10 +710,7 @@ public class SystemServerImpl extends SystemServerGrpc.SystemServerImplBase {
             Integer server = getLeader(shard);
             Integer server_port = getServerPort(shard, server);
             String hostname = getHostName(shard, server);
-//            System.out.println("in send_getTransactions: sending address " + address.toString() + " to hostname " + hostname);
             ManagedChannel channel;
-
-//            System.out.println("sending to " + hostname + ":" + server_port.toString());
 
             channel = ManagedChannelBuilder.forTarget(hostname + ":" + server_port.toString())
                     .usePlaintext()

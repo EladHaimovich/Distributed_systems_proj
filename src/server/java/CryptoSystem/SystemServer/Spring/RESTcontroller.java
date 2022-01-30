@@ -19,8 +19,8 @@ import com.google.gson.Gson;
 public class RESTcontroller {
 
     /* format examples */
-    @GetMapping(value = "/SendMoney/format")
-    public RESTresponse SendMoney_format() {
+    @GetMapping(value = "/SendCoins/format")
+    public RESTresponse SendCoins_format() {
         System.out.println("Entered Rest: SendMoney_format");
         SendCoinsArgs args = new SendCoinsArgs();
         Gson gson = new Gson();
@@ -59,7 +59,7 @@ public class RESTcontroller {
         return new RESTresponse("SUCCESS", json);
     }
 
-    @GetMapping(value = "/address/format/null")
+    @GetMapping(value = "/get_args/format/null")
     public RESTresponse address_format_null() {
         System.out.println("Entered Rest: address_format_null");
         GetArgs args = new GetArgs(null,0);
@@ -119,11 +119,7 @@ public class RESTcontroller {
         return result;
     }
 
-
-
-    // get tarnsaction history (for Address? or for all?)
-    // need to support a limit for the number of transactions.
-    @GetMapping(value = "/TX_HISTORY")
+    @GetMapping(value = "/transaction")
     public RESTresponse TX_HISTORY(@RequestBody String args) {
         System.out.println("Entered Rest: TX_HISTORY");
         Gson gson = new Gson();
@@ -133,8 +129,4 @@ public class RESTcontroller {
         RESTresponse result = new RESTresponse("SUCCESS", json);
         return result;
     }
-
-
-
-
 }

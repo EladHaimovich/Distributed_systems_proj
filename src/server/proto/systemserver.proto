@@ -62,6 +62,5 @@ service SystemServer {
   rpc get_transactions(get_transactions_m) returns (Transaction_list);
 
   rpc Publish_Transaction(TX_m) returns (Response_status);
-  rpc get_transaction_by_txid(uint128_m) returns (TX_m);
 
 }
